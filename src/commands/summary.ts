@@ -56,12 +56,15 @@ export const summaryCommand = new Command('summary')
         format = 'daily'
       }
 
+      // Convert relative dates to absolute for better compatibility
+      const sinceDate = resolveDate(since)
+
       spinner.text = `Fetching commits by ${author} since ${since}...`
 
       // Build log options
-      const logOptions: string[] = [`--author=${author}`, `--since=${since}`]
+      const logOptions: string[] = [`--author=${author}`, `--since=${sinceDate}`]
       if (options.until) {
-        logOptions.push(`--until=${options.until}`)
+        logOptions.push(`--until=${resolveDate(options.until)}`)
       }
 
       const log = await git.log(logOptions)
@@ -172,6 +175,40 @@ function formatMarkdown(summary: WorkSummary, author: string, since: string, unt
   }
 
   return lines.join('\n')
+}
+
+function resolveDate(dateStr: string): string {
+  const now = new Date()
+
+  if (dateStr === 'today') {
+    return formatDate(now)
+  } else if (dateStr === 'yesterday') {
+    const d = new Date(now)
+    d.setDate(d.getDate() - 1)
+    return formatDate(d)
+  } else if (dateStr.match(/^(\d+)\s+(day|days)\s+ago$/i)) {
+    const match = dateStr.match(/^(\d+)\s+(day|days)\s+ago$/i)!
+    const days = parseInt(match[1], 10)
+    const d = new Date(now)
+    d.setDate(d.getDate() - days)
+    return formatDate(d)
+  } else if (dateStr.match(/^(\d+)\s+(week|weeks)\s+ago$/i)) {
+    const match = dateStr.match(/^(\d+)\s+(week|weeks)\s+ago$/i)!
+    const weeks = parseInt(match[1], 10)
+    const d = new Date(now)
+    d.setDate(d.getDate() - weeks * 7)
+    return formatDate(d)
+  }
+
+  // Return as-is if it's already a date string
+  return dateStr
+}
+
+function formatDate(d: Date): string {
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day} 00:00:00`
 }
 
 function printSummary(summary: WorkSummary, author: string, since: string, until?: string) {
