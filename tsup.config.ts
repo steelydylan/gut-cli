@@ -6,6 +6,7 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: true,
+  external: ['keytar'],
   banner: {
     js: '#!/usr/bin/env node'
   }

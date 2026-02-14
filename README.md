@@ -10,7 +10,91 @@ npm install -g gut-cli
 
 ## Commands
 
-### `gut cleanup`
+### AI-Powered Commands
+
+#### `gut ai-commit`
+
+Generate commit messages using AI.
+
+```bash
+# Generate commit message for staged changes
+gut ai-commit
+
+# Auto-commit with generated message
+gut ai-commit --commit
+
+# Stage all and generate
+gut ai-commit --all
+
+# Use specific provider
+gut ai-commit --provider openai
+```
+
+#### `gut ai-pr`
+
+Generate pull request title and description using AI.
+
+```bash
+# Generate PR description
+gut ai-pr
+
+# Specify base branch
+gut ai-pr --base develop
+
+# Create PR directly (requires gh CLI)
+gut ai-pr --create
+
+# Copy to clipboard
+gut ai-pr --copy
+```
+
+Supports PR templates: automatically uses `.github/pull_request_template.md` if present.
+
+#### `gut ai-review`
+
+Get AI code review of your changes.
+
+```bash
+# Review all uncommitted changes
+gut ai-review
+
+# Review staged changes only
+gut ai-review --staged
+
+# Review specific commit
+gut ai-review --commit abc123
+
+# Output as JSON
+gut ai-review --json
+```
+
+### Authentication
+
+#### `gut auth`
+
+Manage API keys for AI providers.
+
+```bash
+# Save API key to system keychain
+gut auth login --provider gemini
+
+# Check which providers are configured
+gut auth status
+
+# Remove API key
+gut auth logout --provider gemini
+```
+
+Supported providers: `gemini`, `openai`, `anthropic`
+
+API keys can also be set via environment variables:
+- `GUT_GEMINI_API_KEY` or `GEMINI_API_KEY`
+- `GUT_OPENAI_API_KEY` or `OPENAI_API_KEY`
+- `GUT_ANTHROPIC_API_KEY` or `ANTHROPIC_API_KEY`
+
+### Branch Management
+
+#### `gut cleanup`
 
 Delete merged branches safely.
 
@@ -26,12 +110,9 @@ gut cleanup --remote
 
 # Skip confirmation prompt
 gut cleanup --force
-
-# Specify base branch
-gut cleanup --base develop
 ```
 
-### `gut conflict`
+#### `gut conflict`
 
 Preview potential merge conflicts before merging.
 
@@ -39,11 +120,49 @@ Preview potential merge conflicts before merging.
 # Check current branch against main
 gut conflict
 
-# Check specific branch against main
+# Check specific branch
 gut conflict feature/my-feature
 
 # Check against a different target branch
 gut conflict feature/my-feature --target develop
+```
+
+### Enhanced Git Commands
+
+#### `gut diff`
+
+Show changes with optional JSON output.
+
+```bash
+# Show diff with colors
+gut diff
+
+# Show staged changes
+gut diff --staged
+
+# Show diffstat only
+gut diff --stat
+
+# Output as JSON (for scripting)
+gut diff --json
+```
+
+#### `gut blame`
+
+Show file blame with optional JSON output.
+
+```bash
+# Show blame for a file
+gut blame src/index.ts
+
+# Show author summary
+gut blame src/index.ts --authors
+
+# Show specific lines
+gut blame src/index.ts --lines 10,20
+
+# Output as JSON
+gut blame src/index.ts --json
 ```
 
 ## Development
