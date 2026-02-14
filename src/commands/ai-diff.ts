@@ -6,6 +6,7 @@ import { generateDiffSummary, DiffSummary } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
 
 export const aiDiffCommand = new Command('ai-diff')
+  .alias('diff')
   .description('Get an AI-powered explanation of your changes')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic)', 'gemini')
   .option('-m, --model <model>', 'Model to use (provider-specific)')

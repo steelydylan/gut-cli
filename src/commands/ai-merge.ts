@@ -8,6 +8,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 export const aiMergeCommand = new Command('ai-merge')
+  .alias('merge')
   .description('Merge a branch with AI-powered conflict resolution')
   .argument('<branch>', 'Branch to merge')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic)', 'gemini')

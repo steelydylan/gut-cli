@@ -6,11 +6,12 @@ import { generateCommitMessage } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
 
 export const aiCommitCommand = new Command('ai-commit')
+  .alias('commit')
   .description('Generate a commit message using AI')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic)', 'gemini')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('-c, --commit', 'Automatically commit with the generated message')
-  .option('-a, --all', 'Stage all changes before generating (git add -A)')
+  .option('-a, --all', 'Force stage all changes (default: auto-stage if nothing staged)')
   .action(async (options) => {
     const git = simpleGit()
 
@@ -29,13 +30,18 @@ export const aiCommitCommand = new Command('ai-commit')
     }
 
     // Get staged diff
-    const diff = await git.diff(['--cached'])
+    let diff = await git.diff(['--cached'])
 
+    // Auto-stage if no staged changes
     if (!diff.trim()) {
-      console.error(chalk.yellow('No staged changes found.'))
-      console.log(chalk.gray('Stage changes with: git add <files>'))
-      console.log(chalk.gray('Or use: gut ai-commit --all'))
-      process.exit(1)
+      const unstaged = await git.diff()
+      if (!unstaged.trim()) {
+        console.error(chalk.yellow('No changes to commit.'))
+        process.exit(1)
+      }
+      console.log(chalk.gray('No staged changes, staging all changes...'))
+      await git.add('-A')
+      diff = await git.diff(['--cached'])
     }
 
     const spinner = ora('Generating commit message...').start()

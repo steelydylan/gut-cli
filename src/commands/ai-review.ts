@@ -6,6 +6,7 @@ import { generateCodeReview, CodeReview } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
 
 export const aiReviewCommand = new Command('ai-review')
+  .alias('review')
   .description('Get an AI code review of your changes')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic)', 'gemini')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
