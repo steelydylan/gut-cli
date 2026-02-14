@@ -10,6 +10,50 @@ import {
 
 const PROVIDERS: Provider[] = ['gemini', 'openai', 'anthropic']
 
+async function readSecretInput(prompt: string): Promise<string> {
+  return new Promise((resolve) => {
+    process.stdout.write(chalk.cyan(prompt))
+
+    let input = ''
+    const stdin = process.stdin
+
+    stdin.setRawMode(true)
+    stdin.resume()
+    stdin.setEncoding('utf8')
+
+    const onData = (char: string) => {
+      const charCode = char.charCodeAt(0)
+
+      if (charCode === 13 || charCode === 10) {
+        // Enter key
+        stdin.setRawMode(false)
+        stdin.pause()
+        stdin.removeListener('data', onData)
+        console.log() // New line after input
+        resolve(input)
+      } else if (charCode === 127 || charCode === 8) {
+        // Backspace
+        if (input.length > 0) {
+          input = input.slice(0, -1)
+          process.stdout.write('\b \b')
+        }
+      } else if (charCode === 3) {
+        // Ctrl+C
+        stdin.setRawMode(false)
+        stdin.pause()
+        console.log()
+        process.exit(0)
+      } else if (charCode >= 32) {
+        // Printable characters
+        input += char
+        process.stdout.write('*')
+      }
+    }
+
+    stdin.on('data', onData)
+  })
+}
+
 export const authCommand = new Command('auth').description('Manage API key authentication')
 
 authCommand
@@ -29,23 +73,12 @@ authCommand
     let apiKey = options.key
 
     if (!apiKey) {
-      // Prompt for API key
-      const readline = await import('readline')
-      const rl = readline.createInterface({
-        input: process.stdin,
-        output: process.stdout
-      })
+      const providerName = getProviderDisplayName(provider)
+      console.log(chalk.bold(`\n🔑 ${providerName} API Key Setup\n`))
+      console.log(chalk.gray(`Your API key will be stored securely in the system keychain.`))
+      console.log()
 
-      apiKey = await new Promise<string>((resolve) => {
-        // Hide input for security
-        process.stdout.write(chalk.cyan(`Enter ${getProviderDisplayName(provider)} API key: `))
-
-        // Simple approach - just read the line
-        rl.question('', (answer) => {
-          resolve(answer)
-        })
-      })
-      rl.close()
+      apiKey = await readSecretInput(`Enter ${providerName} API key: `)
     }
 
     if (!apiKey || apiKey.trim() === '') {

@@ -5,8 +5,7 @@ import { authCommand } from './commands/auth.js'
 import { aiCommitCommand } from './commands/ai-commit.js'
 import { aiPrCommand } from './commands/ai-pr.js'
 import { aiReviewCommand } from './commands/ai-review.js'
-import { diffCommand } from './commands/diff.js'
-import { blameCommand } from './commands/blame.js'
+import { aiDiffCommand } from './commands/ai-diff.js'
 
 const program = new Command()
 
@@ -26,9 +25,6 @@ program.addCommand(authCommand)
 program.addCommand(aiCommitCommand)
 program.addCommand(aiPrCommand)
 program.addCommand(aiReviewCommand)
-
-// Enhanced git commands
-program.addCommand(diffCommand)
-program.addCommand(blameCommand)
+program.addCommand(aiDiffCommand)
 
 program.parse()

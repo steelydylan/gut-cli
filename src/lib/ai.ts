@@ -162,6 +162,49 @@ const CodeReviewSchema = z.object({
 
 export type CodeReview = z.infer<typeof CodeReviewSchema>
 
+const DiffSummarySchema = z.object({
+  summary: z.string().describe('Brief one-line summary of what changed'),
+  changes: z.array(
+    z.object({
+      file: z.string(),
+      description: z.string().describe('What changed in this file')
+    })
+  ),
+  impact: z.string().describe('What impact these changes have on the codebase'),
+  notes: z.array(z.string()).optional().describe('Any important notes or considerations')
+})
+
+export type DiffSummary = z.infer<typeof DiffSummarySchema>
+
+export async function generateDiffSummary(
+  diff: string,
+  options: AIOptions
+): Promise<DiffSummary> {
+  const model = await getModel(options)
+
+  const result = await generateObject({
+    model,
+    schema: DiffSummarySchema,
+    prompt: `You are an expert at explaining code changes in a clear and concise way.
+
+Analyze the following git diff and provide a human-friendly summary.
+
+Focus on:
+- What was changed and why it might have been changed
+- The purpose and impact of the changes
+- Any notable patterns or refactoring
+
+Git diff:
+\`\`\`
+${diff.slice(0, 10000)}
+\`\`\`
+
+Explain the changes in plain language that any developer can understand.`
+  })
+
+  return result.object
+}
+
 export async function generateCodeReview(
   diff: string,
   options: AIOptions
