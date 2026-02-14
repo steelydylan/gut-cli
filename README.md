@@ -1,11 +1,11 @@
-# @gitton/gut
+# gut-cli
 
 **Git Utility Tool** - AI-powered git commands for smarter workflows.
 
 ## Installation
 
 ```bash
-npm install -g @gitton/gut
+npm install -g gut-cli
 ```
 
 ## Commands
