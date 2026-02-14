@@ -7,6 +7,7 @@ import { aiReviewCommand } from './commands/ai-review.js'
 import { aiDiffCommand } from './commands/ai-diff.js'
 import { aiMergeCommand } from './commands/ai-merge.js'
 import { changelogCommand } from './commands/changelog.js'
+import { aiExplainCommand } from './commands/ai-explain.js'
 
 const program = new Command()
 
@@ -28,5 +29,6 @@ program.addCommand(aiReviewCommand)
 program.addCommand(aiDiffCommand)
 program.addCommand(aiMergeCommand)
 program.addCommand(changelogCommand)
+program.addCommand(aiExplainCommand)
 
 program.parse()

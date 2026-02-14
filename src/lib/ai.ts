@@ -325,6 +325,136 @@ const ConflictResolutionSchema = z.object({
 
 export type ConflictResolution = z.infer<typeof ConflictResolutionSchema>
 
+const ExplanationSchema = z.object({
+  summary: z.string().describe('One-line summary of what this file/commit/PR does'),
+  purpose: z.string().describe('The purpose and role of this code'),
+  changes: z.array(
+    z.object({
+      file: z.string(),
+      description: z.string().describe('Description of this file or component')
+    })
+  ),
+  impact: z.string().describe('What impact or role this has in the project'),
+  notes: z.array(z.string()).optional().describe('Important considerations or caveats')
+})
+
+export type Explanation = z.infer<typeof ExplanationSchema>
+
+export async function generateExplanation(
+  context: {
+    type: 'commit' | 'pr' | 'file-history' | 'file-content'
+    title: string
+    diff?: string
+    content?: string
+    metadata: {
+      hash?: string
+      author?: string
+      date?: string
+      prNumber?: string
+      baseBranch?: string
+      headBranch?: string
+      commits?: string[]
+      filePath?: string
+    }
+  },
+  options: AIOptions,
+  projectContext?: string
+): Promise<Explanation> {
+  const model = await getModel(options)
+
+  const projectContextSection = projectContext
+    ? `
+IMPORTANT: Use this project context to provide more accurate explanations:
+
+--- PROJECT CONTEXT START ---
+${projectContext.slice(0, 4000)}
+--- PROJECT CONTEXT END ---
+`
+    : ''
+
+  // Handle file content explanation (different prompt)
+  if (context.type === 'file-content') {
+    const result = await generateObject({
+      model,
+      schema: ExplanationSchema,
+      prompt: `You are an expert at explaining code in a clear and insightful way.
+${projectContextSection}
+Analyze the following file and explain what it does, its purpose, and its role in a project.
+
+File: ${context.metadata.filePath}
+
+Content:
+\`\`\`
+${context.content?.slice(0, 15000)}
+\`\`\`
+
+Focus on:
+- What this file does (main functionality)
+- Its purpose and role in the codebase
+- Key functions, classes, or components it defines
+- Dependencies and what it interacts with
+- Any important patterns or architecture decisions
+
+Explain in a way that helps someone quickly understand this file's purpose and how it fits into the larger codebase.`
+    })
+    return result.object
+  }
+
+  // Handle diff-based explanations (commits, PRs, file history)
+  let contextInfo: string
+  if (context.type === 'pr') {
+    contextInfo = `
+Pull Request: #${context.metadata.prNumber}
+Title: ${context.title}
+Branch: ${context.metadata.headBranch} -> ${context.metadata.baseBranch}
+Commits:
+${context.metadata.commits?.map((c) => `- ${c}`).join('\n') || 'N/A'}
+`
+  } else if (context.type === 'file-history') {
+    contextInfo = `
+File: ${context.metadata.filePath}
+Recent commits:
+${context.metadata.commits?.map((c) => `- ${c}`).join('\n') || 'N/A'}
+Latest author: ${context.metadata.author}
+Latest date: ${context.metadata.date}
+`
+  } else {
+    contextInfo = `
+Commit: ${context.metadata.hash?.slice(0, 7)}
+Message: ${context.title}
+Author: ${context.metadata.author}
+Date: ${context.metadata.date}
+`
+  }
+
+  const targetType = context.type === 'pr' ? 'pull request' : context.type === 'file-history' ? 'file changes' : 'commit'
+
+  const result = await generateObject({
+    model,
+    schema: ExplanationSchema,
+    prompt: `You are an expert at explaining code changes in a clear and insightful way.
+${projectContextSection}
+Analyze the following ${targetType} and provide a comprehensive explanation.
+
+${contextInfo}
+
+Diff:
+\`\`\`
+${context.diff?.slice(0, 12000)}
+\`\`\`
+
+Focus on:
+- What the changes accomplish (not just what files changed)
+- WHY these changes were likely made
+- The broader context and purpose
+- Any important implications or side effects
+
+Explain in a way that helps someone understand not just the "what" but the "why" behind these changes.`
+  })
+
+  return result.object
+}
+
 export async function resolveConflict(
   conflictedContent: string,
   context: {
