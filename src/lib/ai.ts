@@ -2,6 +2,7 @@ import { generateText, generateObject } from 'ai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
+import { createOllama } from 'ollama-ai-provider'
 import { z } from 'zod'
 import { existsSync, readFileSync } from 'fs'
 import { join, dirname } from 'path'
@@ -12,6 +13,8 @@ import { getLanguage, getLanguageInstruction } from './config.js'
 export interface AIOptions {
   provider: Provider
   model?: string
+  ollamaBaseUrl?: string // For Ollama provider
+  apiKey?: string // Optional: directly provide API key (bypasses keytar/env lookup)
 }
 
 // Get the directory where gut is installed (for reading default templates)
@@ -85,31 +88,50 @@ function applyTemplate(
 const DEFAULT_MODELS: Record<Provider, string> = {
   gemini: 'gemini-2.0-flash',
   openai: 'gpt-4o-mini',
-  anthropic: 'claude-sonnet-4-20250514'
+  anthropic: 'claude-sonnet-4-20250514',
+  ollama: 'llama3.2'
 }
 
 async function getModel(options: AIOptions) {
-  const apiKey = await getApiKey(options.provider)
-  if (!apiKey) {
-    throw new Error(
-      `No API key found for ${options.provider}. Run: gut auth login --provider ${options.provider}`
-    )
+  const modelName = options.model || DEFAULT_MODELS[options.provider]
+
+  // Helper to get API key: use provided key or fall back to keytar/env
+  async function resolveApiKey(): Promise<string | null> {
+    if (options.apiKey) return options.apiKey
+    return getApiKey(options.provider)
   }
 
-  const modelName = options.model || DEFAULT_MODELS[options.provider]
+  // Ollama doesn't require an API key
+  if (options.provider !== 'ollama') {
+    const apiKey = await resolveApiKey()
+    if (!apiKey) {
+      throw new Error(
+        `No API key found for ${options.provider}. Run: gut auth login --provider ${options.provider}`
+      )
+    }
+  }
 
   switch (options.provider) {
     case 'gemini': {
-      const google = createGoogleGenerativeAI({ apiKey })
+      const apiKey = await resolveApiKey()
+      const google = createGoogleGenerativeAI({ apiKey: apiKey! })
       return google(modelName)
     }
     case 'openai': {
-      const openai = createOpenAI({ apiKey })
+      const apiKey = await resolveApiKey()
+      const openai = createOpenAI({ apiKey: apiKey! })
       return openai(modelName)
     }
     case 'anthropic': {
-      const anthropic = createAnthropic({ apiKey })
+      const apiKey = await resolveApiKey()
+      const anthropic = createAnthropic({ apiKey: apiKey! })
       return anthropic(modelName)
+    }
+    case 'ollama': {
+      const ollama = createOllama({
+        baseURL: options.ollamaBaseUrl || 'http://localhost:11434/api'
+      })
+      return ollama(modelName)
     }
   }
 }
@@ -411,12 +433,13 @@ export async function searchCommits(
     prompt
   })
 
-  // Enrich results with full commit data
-  const enrichedMatches = result.object.matches.map((match) => {
+  // Enrich results with full commit data and assign relevance based on position
+  const enrichedMatches = result.object.matches.map((match, index) => {
     const commit = commits.find((c) => c.hash.startsWith(match.hash))
     if (!commit) {
       return null
     }
+    const relevance: 'high' | 'medium' | 'low' = index === 0 ? 'high' : index < 3 ? 'medium' : 'low'
     return {
       hash: commit.hash,
       message: commit.message,
@@ -424,16 +447,9 @@ export async function searchCommits(
       email: commit.email,
       date: commit.date,
       reason: match.reason,
-      relevance: 'high' as const // First results are most relevant
+      relevance
     }
   }).filter((m): m is NonNullable<typeof m> => m !== null)
-
-  // Assign relevance based on position
-  enrichedMatches.forEach((match, index) => {
-    if (index === 0) match.relevance = 'high'
-    else if (index < 3) match.relevance = 'medium'
-    else match.relevance = 'low'
-  })
 
   return {
     matches: enrichedMatches,

@@ -1,20 +1,23 @@
 const SERVICE_NAME = 'gut-cli'
 
-export type Provider = 'gemini' | 'openai' | 'anthropic'
+export type Provider = 'gemini' | 'openai' | 'anthropic' | 'ollama'
 
-const PROVIDER_KEY_MAP: Record<Provider, string> = {
+// Providers that require API keys
+type ApiKeyProvider = Exclude<Provider, 'ollama'>
+
+const PROVIDER_KEY_MAP: Record<ApiKeyProvider, string> = {
   gemini: 'gemini-api-key',
   openai: 'openai-api-key',
   anthropic: 'anthropic-api-key'
 }
 
-const ENV_VAR_MAP: Record<Provider, string> = {
+const ENV_VAR_MAP: Record<ApiKeyProvider, string> = {
   gemini: 'GUT_GEMINI_API_KEY',
   openai: 'GUT_OPENAI_API_KEY',
   anthropic: 'GUT_ANTHROPIC_API_KEY'
 }
 
-const FALLBACK_ENV_MAP: Record<Provider, string> = {
+const FALLBACK_ENV_MAP: Record<ApiKeyProvider, string> = {
   gemini: 'GEMINI_API_KEY',
   openai: 'OPENAI_API_KEY',
   anthropic: 'ANTHROPIC_API_KEY'
@@ -29,6 +32,9 @@ async function getKeytar(): Promise<typeof import('keytar') | null> {
 }
 
 export async function saveApiKey(provider: Provider, apiKey: string): Promise<void> {
+  if (provider === 'ollama') {
+    throw new Error('Ollama does not require an API key')
+  }
   const keytar = await getKeytar()
   if (!keytar) {
     throw new Error('Keychain not available. Set environment variable instead.')
@@ -37,6 +43,11 @@ export async function saveApiKey(provider: Provider, apiKey: string): Promise<vo
 }
 
 export async function getApiKey(provider: Provider): Promise<string | null> {
+  // Ollama doesn't need an API key
+  if (provider === 'ollama') {
+    return null
+  }
+
   // 1. Check environment variable (GUT_*_API_KEY)
   const envKey = process.env[ENV_VAR_MAP[provider]]
   if (envKey) return envKey
@@ -52,6 +63,9 @@ export async function getApiKey(provider: Provider): Promise<string | null> {
 }
 
 export async function deleteApiKey(provider: Provider): Promise<boolean> {
+  if (provider === 'ollama') {
+    throw new Error('Ollama does not use an API key')
+  }
   const keytar = await getKeytar()
   if (!keytar) {
     throw new Error('Keychain not available.')
@@ -60,13 +74,15 @@ export async function deleteApiKey(provider: Provider): Promise<boolean> {
 }
 
 export async function listProviders(): Promise<{ provider: Provider; hasKey: boolean }[]> {
-  const providers: Provider[] = ['gemini', 'openai', 'anthropic']
+  const apiKeyProviders: ApiKeyProvider[] = ['gemini', 'openai', 'anthropic']
   const results = await Promise.all(
-    providers.map(async (provider) => ({
-      provider,
+    apiKeyProviders.map(async (provider) => ({
+      provider: provider as Provider,
       hasKey: !!(await getApiKey(provider))
     }))
   )
+  // Add ollama (always available, no key needed)
+  results.push({ provider: 'ollama', hasKey: true })
   return results
 }
 
@@ -74,7 +90,8 @@ export function getProviderDisplayName(provider: Provider): string {
   const names: Record<Provider, string> = {
     gemini: 'Google Gemini',
     openai: 'OpenAI',
-    anthropic: 'Anthropic Claude'
+    anthropic: 'Anthropic Claude',
+    ollama: 'Ollama (Local)'
   }
   return names[provider]
 }
