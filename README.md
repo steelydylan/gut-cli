@@ -24,6 +24,7 @@ All AI commands support short aliases (without `ai-` prefix):
 | `gut changelog` | - | Generate changelogs |
 | `gut sync` | - | Sync with remote (fetch + rebase/merge) |
 | `gut stash` | - | Stash with AI-generated names |
+| `gut summary` | - | Generate work summary (daily/weekly reports) |
 | `gut config` | - | Manage configuration (language, etc.) |
 | `gut lang` | - | Set or show output language |
 
@@ -240,6 +241,46 @@ gut stash --drop 1
 # Clear all stashes
 gut stash --clear
 ```
+
+### `gut summary`
+
+Generate a work summary from your commits (for daily/weekly reports).
+
+```bash
+# Today's summary (default: your commits)
+gut summary
+
+# Daily report
+gut summary --daily
+
+# Weekly report
+gut summary --weekly
+
+# Custom date range
+gut summary --since "2024-01-01" --until "2024-01-31"
+
+# Include diff for more detail
+gut summary --weekly --with-diff
+
+# Output as markdown (great for Slack/docs)
+gut summary --weekly --markdown
+
+# Copy to clipboard
+gut summary --daily --copy
+
+# Specify different author
+gut summary --author "John Doe"
+```
+
+**Options:**
+- `--daily` - Generate daily report (since today)
+- `--weekly` - Generate weekly report (since 1 week ago)
+- `--since <date>` - Start date (default: today)
+- `--until <date>` - End date
+- `--author <author>` - Filter by author (default: current git user)
+- `--with-diff` - Include diff analysis for more detail
+- `--markdown` - Output as markdown
+- `--copy` - Copy to clipboard
 
 ### `gut changelog`
 

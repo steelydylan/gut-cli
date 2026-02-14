@@ -622,6 +622,89 @@ Respond with ONLY the stash name, nothing else.`
   return result.text.trim()
 }
 
+const WorkSummarySchema = z.object({
+  title: z.string().describe('One-line title for the summary'),
+  overview: z.string().describe('Brief overview of what was accomplished'),
+  highlights: z.array(z.string()).describe('Key accomplishments or highlights'),
+  details: z.array(
+    z.object({
+      category: z.string().describe('Category (e.g., Feature, Bug Fix, Refactor)'),
+      items: z.array(z.string()).describe('List of items in this category')
+    })
+  ),
+  stats: z.object({
+    commits: z.number(),
+    filesChanged: z.number().optional(),
+    additions: z.number().optional(),
+    deletions: z.number().optional()
+  }).optional()
+})
+
+export type WorkSummary = z.infer<typeof WorkSummarySchema>
+
+export async function generateWorkSummary(
+  context: {
+    commits: Array<{ hash: string; message: string; date: string }>
+    author: string
+    since: string
+    until?: string
+    diff?: string
+  },
+  options: AIOptions,
+  format: 'daily' | 'weekly' | 'custom' = 'custom'
+): Promise<WorkSummary> {
+  const model = await getModel(options)
+
+  const commitList = context.commits
+    .map((c) => `- ${c.hash.slice(0, 7)} ${c.message.split('\n')[0]} (${c.date.split('T')[0]})`)
+    .join('\n')
+
+  const langInstruction = getLanguageInstruction(getLanguage())
+
+  const formatHint = format === 'daily'
+    ? 'This is a daily report. Focus on today\'s accomplishments.'
+    : format === 'weekly'
+    ? 'This is a weekly report. Summarize the week\'s work at a higher level.'
+    : `This is a summary from ${context.since}${context.until ? ` to ${context.until}` : ''}.`
+
+  const result = await generateObject({
+    model,
+    schema: WorkSummarySchema,
+    prompt: `You are an expert at writing work summaries and reports.
+
+Generate a clear, professional work summary for the following git activity.
+
+Author: ${context.author}
+Period: ${context.since}${context.until ? ` to ${context.until}` : ' to now'}
+${formatHint}
+
+Commits:
+${commitList}
+
+${context.diff ? `
+Diff summary (truncated):
+\`\`\`
+${context.diff.slice(0, 6000)}
+\`\`\`
+` : ''}
+
+Focus on:
+- What was accomplished (not just listing commits)
+- Group related work together
+- Highlight important achievements
+- Use clear, non-technical language where possible
+- Make it suitable for sharing with team or manager${langInstruction}`
+  })
+
+  return {
+    ...result.object,
+    stats: {
+      commits: context.commits.length,
+      ...result.object.stats
+    }
+  }
+}
+
 export async function resolveConflict(
   conflictedContent: string,
   context: {
