@@ -2,6 +2,12 @@
 
 **Git Utility Tool** - AI-powered git commands for smarter workflows.
 
+## Why gut?
+
+- **Fast** - Unlike AI coding assistants that analyze your entire codebase, gut focuses only on git operations. Get commit messages, PR descriptions, and code reviews in seconds.
+- **No subscription required** - Use your own API key from Gemini, OpenAI, or Anthropic. No monthly fees for an AI coding assistant.
+- **Secure** - API keys are stored in your system's native keychain (macOS Keychain, Windows Credential Vault, Linux Secret Service), not in plain text files.
+
 ## Installation
 
 ```bash
@@ -10,23 +16,21 @@ npm install -g gut-cli
 
 ## Commands
 
-All AI commands support short aliases (without `ai-` prefix):
-
-| Command | Alias | Description |
-|---------|-------|-------------|
-| `gut ai-commit` | `gut commit` | Generate commit messages |
-| `gut ai-pr` | `gut pr` | Generate PR descriptions |
-| `gut ai-review` | `gut review` | Code review |
-| `gut ai-merge` | `gut merge` | Resolve merge conflicts |
-| `gut ai-explain` | `gut explain` | Explain changes, commits, PRs, or files |
-| `gut ai-find` | `gut find` | Find commits by vague description |
-| `gut ai-branch` | `gut branch` | Generate branch names from description |
-| `gut changelog` | - | Generate changelogs |
-| `gut sync` | - | Sync with remote (fetch + rebase/merge) |
-| `gut stash` | - | Stash with AI-generated names |
-| `gut summary` | - | Generate work summary (daily/weekly reports) |
-| `gut config` | - | Manage configuration (language, etc.) |
-| `gut lang` | - | Set or show output language |
+| Command | Description |
+|---------|-------------|
+| `gut commit` | Generate commit messages |
+| `gut pr` | Generate PR descriptions |
+| `gut review` | Code review |
+| `gut merge` | Resolve merge conflicts |
+| `gut explain` | Explain changes, commits, PRs, or files |
+| `gut find` | Find commits by vague description |
+| `gut branch` | Generate branch names from description |
+| `gut changelog` | Generate changelogs |
+| `gut sync` | Sync with remote (fetch + rebase/merge) |
+| `gut stash` | Stash with AI-generated names |
+| `gut summary` | Generate work summary (daily/weekly reports) |
+| `gut config` | Manage configuration (language, etc.) |
+| `gut lang` | Set or show output language |
 
 ### `gut commit`
 
@@ -384,6 +388,16 @@ API keys can also be set via environment variables:
 - `GUT_GEMINI_API_KEY` or `GEMINI_API_KEY`
 - `GUT_OPENAI_API_KEY` or `OPENAI_API_KEY`
 - `GUT_ANTHROPIC_API_KEY` or `ANTHROPIC_API_KEY`
+
+## Security
+
+API keys are stored securely using your operating system's native credential storage:
+
+- **macOS**: Keychain
+- **Windows**: Credential Vault
+- **Linux**: Secret Service API (libsecret)
+
+Keys are never stored in plain text files or configuration files. When you run `gut auth login`, the key is encrypted and managed by your OS.
 
 ## Project Configuration
 
