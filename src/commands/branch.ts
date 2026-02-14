@@ -5,6 +5,7 @@ import { simpleGit } from 'simple-git'
 import { execSync } from 'child_process'
 import { generateBranchName, findTemplate } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
+import { requireGhCli } from '../lib/gh.js'
 
 function getIssueInfo(issueNumber: string): { title: string; body: string } | null {
   try {
@@ -43,14 +44,18 @@ export const branchCommand = new Command('branch')
       // Use provided description
       description = options.description
     } else if (issue) {
-      // Fetch issue from GitHub
+      // Fetch issue from GitHub - check gh CLI first
+      if (!requireGhCli()) {
+        process.exit(1)
+      }
+
       issueNumber = issue.replace(/^#/, '')
       const spinner = ora(`Fetching issue #${issueNumber}...`).start()
 
       const issueInfo = getIssueInfo(issueNumber)
       if (!issueInfo) {
         spinner.fail(`Could not fetch issue #${issueNumber}`)
-        console.log(chalk.gray('Make sure gh CLI is installed and you are authenticated'))
+        console.log(chalk.gray('Make sure you are authenticated: gh auth login'))
         process.exit(1)
       }
 

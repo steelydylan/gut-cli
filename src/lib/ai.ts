@@ -52,7 +52,7 @@ export function findTemplate(repoRoot: string, templateName: string): string | n
  * @param userTemplate - User-provided template string or null/undefined
  * @param templateName - Name of the default template file in .gut/ (without .md extension)
  * @param variables - Variables to replace in the template
- * @returns Processed template with language instruction appended if using default
+ * @returns Processed template with language instruction appended
  */
 function applyTemplate(
   userTemplate: string | null | undefined,
@@ -60,7 +60,6 @@ function applyTemplate(
   variables: Record<string, string | undefined>
 ): string {
   const langInstruction = getLanguageInstruction(getLanguage())
-  const isUserTemplate = !!userTemplate
 
   // Priority: user template > .gut/ template
   let result = userTemplate || loadTemplate(templateName)
@@ -75,8 +74,8 @@ function applyTemplate(
     result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value || '')
   }
 
-  // Append language instruction only when NOT using user's custom template
-  if (!isUserTemplate) {
+  // Always append language instruction (for both user and default templates)
+  if (langInstruction) {
     result += langInstruction
   }
 

@@ -4,8 +4,10 @@ import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+import { execSync } from 'child_process'
 import { generatePRDescription, findTemplate } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
+import { isGhCliInstalled, printGhNotInstalledMessage } from '../lib/gh.js'
 
 // GitHub's conventional PR template paths (prioritized)
 const GITHUB_PR_TEMPLATE_PATHS = [
@@ -27,6 +29,7 @@ function findPRTemplate(repoRoot: string): string | null {
   // Fall back to .gut/pr.md
   return findTemplate(repoRoot, 'pr')
 }
+
 
 export const prCommand = new Command('pr')
   .description('Generate a pull request title and description using AI')
@@ -117,7 +120,6 @@ export const prCommand = new Command('pr')
 
       if (options.copy) {
         try {
-          const { execSync } = await import('child_process')
           const fullText = `${title}\n\n${body}`
           execSync('pbcopy', { input: fullText })
           console.log(chalk.green('\n✓ Copied to clipboard'))
@@ -126,23 +128,37 @@ export const prCommand = new Command('pr')
         }
       }
 
-      if (options.create) {
+      // Check if gh CLI is installed
+      const ghInstalled = isGhCliInstalled()
+
+      if (!ghInstalled) {
+        console.log(chalk.yellow('\n⚠ GitHub CLI (gh) is not installed'))
+        console.log(chalk.gray('  To create PRs directly from gut, install gh CLI:'))
+        console.log(chalk.gray('    brew install gh  (macOS)'))
+        console.log(chalk.gray('    https://cli.github.com/'))
+        if (!options.copy) {
+          console.log(chalk.gray('\nTip: Use --copy to copy to clipboard'))
+        }
+      } else {
+        // Always ask about creating PR
         const readline = await import('readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout
         })
 
+        const promptMessage = options.create
+          ? chalk.cyan('\nCreate PR with this description? (y/N) ')
+          : chalk.cyan('\nCreate PR with gh CLI? (y/N) ')
+
         const answer = await new Promise<string>((resolve) => {
-          rl.question(chalk.cyan('\nCreate PR with this description? (y/N) '), resolve)
+          rl.question(promptMessage, resolve)
         })
         rl.close()
 
         if (answer.toLowerCase() === 'y') {
           const createSpinner = ora('Creating PR...').start()
           try {
-            const { execSync } = await import('child_process')
-
             // Escape quotes in title and body
             const escapedTitle = title.replace(/"/g, '\\"')
             const escapedBody = body.replace(/"/g, '\\"')
@@ -154,15 +170,11 @@ export const prCommand = new Command('pr')
             createSpinner.succeed('PR created successfully!')
           } catch (error) {
             createSpinner.fail('Failed to create PR')
-            console.error(chalk.gray('Make sure gh CLI is installed and authenticated'))
+            console.error(chalk.gray('Make sure gh CLI is authenticated: gh auth login'))
           }
+        } else if (!options.copy) {
+          console.log(chalk.gray('\nTip: Use --copy to copy to clipboard'))
         }
-      }
-
-      if (!options.copy && !options.create) {
-        console.log(chalk.gray('\nOptions:'))
-        console.log(chalk.gray('  --copy    Copy to clipboard'))
-        console.log(chalk.gray('  --create  Create PR with gh CLI'))
       }
     } catch (error) {
       spinner.fail('Failed to generate PR description')

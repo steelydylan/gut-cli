@@ -5,6 +5,7 @@ import { simpleGit } from 'simple-git'
 import { execSync } from 'child_process'
 import { generateCodeReview, CodeReview, findTemplate } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
+import { requireGhCli } from '../lib/gh.js'
 
 interface PRInfo {
   number: number
@@ -62,8 +63,12 @@ export const reviewCommand = new Command('review')
       let prInfo: PRInfo | null = null
 
       if (prNumber) {
-        // Review GitHub PR
-        spinner.text = `Fetching PR #${prNumber}...`
+        // Review GitHub PR - check gh CLI first
+        spinner.stop()
+        if (!requireGhCli()) {
+          process.exit(1)
+        }
+        spinner.start(`Fetching PR #${prNumber}...`)
         const result = await getPRDiff(prNumber)
         diff = result.diff
         prInfo = result.prInfo

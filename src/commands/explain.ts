@@ -6,6 +6,7 @@ import { execSync } from 'child_process'
 import { existsSync, readFileSync } from 'fs'
 import { generateExplanation, findTemplate } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
+import { requireGhCli } from '../lib/gh.js'
 
 export const explainCommand = new Command('explain')
   .description('Get an AI-powered explanation of changes, commits, PRs, or files')
@@ -45,6 +46,12 @@ export const explainCommand = new Command('explain')
         const isFile = existsSync(target)
 
         if (isPR) {
+          // Check gh CLI first
+          spinner.stop()
+          if (!requireGhCli()) {
+            process.exit(1)
+          }
+          spinner.start()
           context = await getPRContext(target, spinner)
         } else if (isFile) {
           if (options.history) {
