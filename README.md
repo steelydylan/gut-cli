@@ -1,11 +1,11 @@
-# gut
+# @gitton/gut
 
-**Git Utility Tool** - A collection of handy git commands for everyday workflows.
+**Git Utility Tool** - AI-powered git commands for smarter workflows.
 
 ## Installation
 
 ```bash
-npm install -g gut-cli
+npm install -g @gitton/gut
 ```
 
 ## Commands
@@ -68,6 +68,24 @@ gut ai-review --commit abc123
 gut ai-review --json
 ```
 
+#### `gut ai-diff`
+
+Get an AI-powered explanation of your changes.
+
+```bash
+# Explain all uncommitted changes
+gut ai-diff
+
+# Explain staged changes only
+gut ai-diff --staged
+
+# Explain specific commit
+gut ai-diff --commit abc123
+
+# Output as JSON
+gut ai-diff --json
+```
+
 ### Authentication
 
 #### `gut auth`
@@ -125,44 +143,6 @@ gut conflict feature/my-feature
 
 # Check against a different target branch
 gut conflict feature/my-feature --target develop
-```
-
-### Enhanced Git Commands
-
-#### `gut diff`
-
-Show changes with optional JSON output.
-
-```bash
-# Show diff with colors
-gut diff
-
-# Show staged changes
-gut diff --staged
-
-# Show diffstat only
-gut diff --stat
-
-# Output as JSON (for scripting)
-gut diff --json
-```
-
-#### `gut blame`
-
-Show file blame with optional JSON output.
-
-```bash
-# Show blame for a file
-gut blame src/index.ts
-
-# Show author summary
-gut blame src/index.ts --authors
-
-# Show specific lines
-gut blame src/index.ts --lines 10,20
-
-# Output as JSON
-gut blame src/index.ts --json
 ```
 
 ## Development
