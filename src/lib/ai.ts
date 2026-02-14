@@ -332,9 +332,25 @@ export async function resolveConflict(
     oursRef: string
     theirsRef: string
   },
-  options: AIOptions
+  options: AIOptions,
+  strategy?: string
 ): Promise<ConflictResolution> {
   const model = await getModel(options)
+
+  const strategyInstructions = strategy
+    ? `
+IMPORTANT: Follow this project's merge strategy:
+
+--- MERGE STRATEGY START ---
+${strategy}
+--- MERGE STRATEGY END ---
+`
+    : `
+Rules:
+- Understand the intent of both changes
+- Combine changes when both are valid additions
+- Choose the more complete/correct version when they conflict
+- Preserve all necessary functionality`
 
   const result = await generateObject({
     model,
@@ -350,12 +366,9 @@ Conflicted content:
 \`\`\`
 ${conflictedContent}
 \`\`\`
+${strategyInstructions}
 
-Rules:
-- Understand the intent of both changes
-- Combine changes when both are valid additions
-- Choose the more complete/correct version when they conflict
-- Preserve all necessary functionality
+Additional rules:
 - The resolved content should be valid, working code
 - Do NOT include conflict markers (<<<<<<, =======, >>>>>>)
 

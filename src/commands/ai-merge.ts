@@ -7,6 +7,21 @@ import { Provider } from '../lib/credentials.js'
 import * as fs from 'fs'
 import * as path from 'path'
 
+const MERGE_STRATEGY_PATHS = [
+  '.gut/merge-strategy.md',
+  '.github/merge-strategy.md'
+]
+
+function findMergeStrategy(repoRoot: string): string | null {
+  for (const strategyPath of MERGE_STRATEGY_PATHS) {
+    const fullPath = path.join(repoRoot, strategyPath)
+    if (fs.existsSync(fullPath)) {
+      return fs.readFileSync(fullPath, 'utf-8')
+    }
+  }
+  return null
+}
+
 export const aiMergeCommand = new Command('ai-merge')
   .alias('merge')
   .description('Merge a branch with AI-powered conflict resolution')
@@ -62,6 +77,12 @@ export const aiMergeCommand = new Command('ai-merge')
     const spinner = ora()
     const rootDir = await git.revparse(['--show-toplevel'])
 
+    // Find merge strategy
+    const strategy = findMergeStrategy(rootDir.trim())
+    if (strategy) {
+      console.log(chalk.gray('Using merge strategy from project...\n'))
+    }
+
     for (const file of conflictedFiles) {
       const filePath = path.join(rootDir.trim(), file)
       const content = fs.readFileSync(filePath, 'utf-8')
@@ -84,7 +105,7 @@ export const aiMergeCommand = new Command('ai-merge')
           filename: file,
           oursRef: currentBranch,
           theirsRef: branch
-        }, { provider, model: options.model })
+        }, { provider, model: options.model }, strategy || undefined)
 
         spinner.stop()
 

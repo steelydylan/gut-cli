@@ -8,6 +8,7 @@ import { generatePRDescription } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
 
 const PR_TEMPLATE_PATHS = [
+  '.gut/pr-template.md',
   '.github/pull_request_template.md',
   '.github/PULL_REQUEST_TEMPLATE.md',
   'pull_request_template.md',

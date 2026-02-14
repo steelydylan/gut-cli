@@ -186,8 +186,11 @@ gut looks for these configuration files in your repository:
 | File | Purpose |
 |------|---------|
 | `.gut/commit-convention.md` | Custom commit message rules |
-| `.github/pull_request_template.md` | PR description template |
-| `CHANGELOG.md` | Changelog style reference |
+| `.gut/pr-template.md` | PR description template |
+| `.gut/changelog-template.md` | Changelog style template |
+| `.gut/merge-strategy.md` | Merge conflict resolution rules |
+| `.github/pull_request_template.md` | PR template (fallback) |
+| `CHANGELOG.md` | Changelog style (fallback) |
 
 ## Development
 

@@ -8,6 +8,8 @@ import { generateChangelog, Changelog } from '../lib/ai.js'
 import { Provider } from '../lib/credentials.js'
 
 const CHANGELOG_PATHS = [
+  '.gut/changelog-template.md',
+  '.gut/CHANGELOG.md',
   'CHANGELOG.md',
   'HISTORY.md',
   'CHANGES.md',
