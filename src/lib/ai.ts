@@ -455,6 +455,113 @@ Explain in a way that helps someone understand not just the "what" but the "why"
   return result.object
 }
 
+const CommitSearchSchema = z.object({
+  matches: z.array(
+    z.object({
+      hash: z.string().describe('Commit hash'),
+      reason: z.string().describe('Why this commit matches the query')
+    })
+  ),
+  summary: z.string().optional().describe('Brief summary of the search results')
+})
+
+export interface CommitSearchResult {
+  matches: Array<{
+    hash: string
+    message: string
+    author: string
+    email: string
+    date: string
+    reason: string
+    relevance?: 'high' | 'medium' | 'low'
+  }>
+  summary?: string
+}
+
+export async function searchCommits(
+  query: string,
+  commits: Array<{
+    hash: string
+    message: string
+    author: string
+    email: string
+    date: string
+  }>,
+  options: AIOptions,
+  maxResults: number = 5,
+  projectContext?: string
+): Promise<CommitSearchResult> {
+  const model = await getModel(options)
+
+  const projectContextSection = projectContext
+    ? `
+IMPORTANT: Use this project context to better understand the codebase:
+
+--- PROJECT CONTEXT START ---
+${projectContext.slice(0, 3000)}
+--- PROJECT CONTEXT END ---
+`
+    : ''
+
+  const commitList = commits
+    .map((c) => `${c.hash.slice(0, 7)} | ${c.author} | ${c.date.split('T')[0]} | ${c.message.split('\n')[0]}`)
+    .join('\n')
+
+  const result = await generateObject({
+    model,
+    schema: CommitSearchSchema,
+    prompt: `You are an expert at understanding git history and finding relevant commits.
+${projectContextSection}
+The user is looking for commits related to: "${query}"
+
+Here are the commits to search through:
+\`\`\`
+${commitList}
+\`\`\`
+
+Find the commits that best match the user's query. Consider:
+- Commit messages that mention similar concepts
+- Related features, bug fixes, or changes
+- Semantic similarity (e.g., "login" matches "authentication")
+
+Return up to ${maxResults} matching commits, ordered by relevance (most relevant first).
+Only include commits that actually match the query - if none match well, return an empty array.
+
+For each match, provide:
+- The commit hash (first 7 characters are fine)
+- A brief reason explaining why this commit matches the query`
+  })
+
+  // Enrich results with full commit data
+  const enrichedMatches = result.object.matches.map((match) => {
+    const commit = commits.find((c) => c.hash.startsWith(match.hash))
+    if (!commit) {
+      return null
+    }
+    return {
+      hash: commit.hash,
+      message: commit.message,
+      author: commit.author,
+      email: commit.email,
+      date: commit.date,
+      reason: match.reason,
+      relevance: 'high' as const // First results are most relevant
+    }
+  }).filter((m): m is NonNullable<typeof m> => m !== null)
+
+  // Assign relevance based on position
+  enrichedMatches.forEach((match, index) => {
+    if (index === 0) match.relevance = 'high'
+    else if (index < 3) match.relevance = 'medium'
+    else match.relevance = 'low'
+  })
+
+  return {
+    matches: enrichedMatches,
+    summary: result.object.summary
+  }
+}
+
 export async function resolveConflict(
   conflictedContent: string,
   context: {

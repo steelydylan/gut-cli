@@ -20,6 +20,7 @@ All AI commands support short aliases (without `ai-` prefix):
 | `gut ai-diff` | `gut diff` | Explain changes |
 | `gut ai-merge` | `gut merge` | Resolve merge conflicts |
 | `gut ai-explain` | `gut explain` | Explain commits, PRs, or files |
+| `gut ai-find` | `gut find` | Find commits by vague description |
 | `gut changelog` | - | Generate changelogs |
 
 ### `gut commit`
@@ -148,6 +149,37 @@ gut explain src/index.ts --json
 
 **Project Context Support**: Create `.gut/explain.md` to provide project-specific context for better explanations.
 
+### `gut find`
+
+Find commits matching a vague description using AI.
+
+```bash
+# Find commits related to a feature
+gut find "login feature"
+
+# Find bug fixes
+gut find "fixed the crash"
+
+# Search with filters
+gut find "API changes" --author "John" --since "2024-01-01"
+
+# Limit search scope
+gut find "refactoring" --path src/lib --num 50
+
+# Output as JSON
+gut find "authentication" --json
+```
+
+**Options:**
+- `-n, --num <n>` - Number of commits to search (default: 100)
+- `--path <path>` - Limit to commits affecting this path
+- `--author <author>` - Limit to commits by this author
+- `--since <date>` - Limit to commits after this date
+- `--until <date>` - Limit to commits before this date
+- `--max-results <n>` - Max matching commits to return (default: 5)
+
+**Project Context Support**: Create `.gut/find.md` to provide project-specific context for better search results.
+
 ### `gut changelog`
 
 Generate a changelog from commits.
@@ -219,6 +251,7 @@ gut looks for these configuration files in your repository:
 | `.gut/changelog-template.md` | Changelog style template |
 | `.gut/merge-strategy.md` | Merge conflict resolution rules |
 | `.gut/explain.md` | Project context for explanations |
+| `.gut/find.md` | Project context for commit search |
 | `.github/pull_request_template.md` | PR template (fallback) |
 | `CHANGELOG.md` | Changelog style (fallback) |
 
