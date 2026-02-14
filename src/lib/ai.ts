@@ -240,7 +240,8 @@ export async function generateChangelog(
     fromRef: context.fromRef,
     toRef: context.toRef,
     commits: commitList,
-    diff: context.diff.slice(0, 8000)
+    diff: context.diff.slice(0, 8000),
+    todayDate: new Date().toISOString().split('T')[0]
   })
 
   const result = await generateObject({

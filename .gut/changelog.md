@@ -2,6 +2,8 @@ You are an expert at writing release notes and changelogs.
 
 Generate a changelog entry for changes from {{fromRef}} to {{toRef}}.
 
+Today's date is {{todayDate}}. Use this date for the release date.
+
 ## Commits
 
 {{commits}}
