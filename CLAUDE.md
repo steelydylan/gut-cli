@@ -6,8 +6,15 @@
 - When adding a new command or feature, **always update README.md** to document it
 - Update the command table and usage examples
 - For AI-powered commands, **always add a corresponding `.gut/` template file** for project-specific customization
-  - Example: `ai-commit` → `.gut/commit-convention.md`
-  - Example: `ai-explain` → `.gut/explain.md`
+  - **CRITICAL: This is mandatory. Do not forget this step.**
+  - Current mappings:
+    - `ai-commit` → `.gut/commit-convention.md`
+    - `ai-pr` → `.gut/pr-template.md`
+    - `ai-merge` → `.gut/merge-strategy.md`
+    - `ai-explain` → `.gut/explain.md`
+    - `ai-find` → `.gut/find.md`
+    - `ai-branch` → `.gut/branch-convention.md`
+    - `changelog` → `.gut/changelog-template.md`
 
 ### Project Structure
 - Commands go in `src/commands/`
