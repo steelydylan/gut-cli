@@ -233,3 +233,51 @@ Be constructive and specific. Include line numbers when possible.`
 
   return result.object
 }
+
+const ConflictResolutionSchema = z.object({
+  resolvedContent: z.string().describe('The resolved file content'),
+  explanation: z.string().describe('Brief explanation of how the conflict was resolved'),
+  strategy: z.enum(['ours', 'theirs', 'combined', 'rewritten']).describe('Resolution strategy used')
+})
+
+export type ConflictResolution = z.infer<typeof ConflictResolutionSchema>
+
+export async function resolveConflict(
+  conflictedContent: string,
+  context: {
+    filename: string
+    oursRef: string
+    theirsRef: string
+  },
+  options: AIOptions
+): Promise<ConflictResolution> {
+  const model = await getModel(options)
+
+  const result = await generateObject({
+    model,
+    schema: ConflictResolutionSchema,
+    prompt: `You are an expert at resolving git merge conflicts intelligently.
+
+Analyze the following conflicted file and provide a resolution.
+
+File: ${context.filename}
+Merging: ${context.theirsRef} into ${context.oursRef}
+
+Conflicted content:
+\`\`\`
+${conflictedContent}
+\`\`\`
+
+Rules:
+- Understand the intent of both changes
+- Combine changes when both are valid additions
+- Choose the more complete/correct version when they conflict
+- Preserve all necessary functionality
+- The resolved content should be valid, working code
+- Do NOT include conflict markers (<<<<<<, =======, >>>>>>)
+
+Provide the fully resolved file content.`
+  })
+
+  return result.object
+}

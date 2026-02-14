@@ -110,6 +110,21 @@ API keys can also be set via environment variables:
 - `GUT_OPENAI_API_KEY` or `OPENAI_API_KEY`
 - `GUT_ANTHROPIC_API_KEY` or `ANTHROPIC_API_KEY`
 
+#### `gut ai-merge`
+
+Merge branches with AI-powered conflict resolution.
+
+```bash
+# Merge a branch with AI conflict resolution
+gut ai-merge feature/login
+
+# Use specific provider
+gut ai-merge feature/login --provider openai
+
+# Don't auto-commit after resolving
+gut ai-merge feature/login --no-commit
+```
+
 ### Branch Management
 
 #### `gut cleanup`
@@ -128,21 +143,6 @@ gut cleanup --remote
 
 # Skip confirmation prompt
 gut cleanup --force
-```
-
-#### `gut conflict`
-
-Preview potential merge conflicts before merging.
-
-```bash
-# Check current branch against main
-gut conflict
-
-# Check specific branch
-gut conflict feature/my-feature
-
-# Check against a different target branch
-gut conflict feature/my-feature --target develop
 ```
 
 ## Development
