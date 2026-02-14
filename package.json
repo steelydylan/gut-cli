@@ -1,6 +1,6 @@
 {
   "name": "@gitton/gut",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Git Utility Tool - AI-powered git commands for smarter workflows",
   "type": "module",
   "bin": {
