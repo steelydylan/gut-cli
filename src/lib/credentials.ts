@@ -25,7 +25,9 @@ const FALLBACK_ENV_MAP: Record<ApiKeyProvider, string> = {
 
 async function getKeytar(): Promise<typeof import('keytar') | null> {
   try {
-    return await import('keytar')
+    const keytar = await import('keytar')
+    // keytar is a CommonJS module, so we need to handle default export
+    return keytar.default || keytar
   } catch {
     return null
   }

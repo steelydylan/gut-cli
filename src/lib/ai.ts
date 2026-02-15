@@ -18,10 +18,25 @@ export interface AIOptions {
 }
 
 // Get the directory where gut is installed (for reading default templates)
-// After bundling with tsup, the output is dist/index.js, so we go up one level
+// Works for both CLI (dist/index.js) and library (dist/lib/index.js) entry points
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
-const GUT_ROOT = join(__dirname, '..')
+
+function findGutRoot(): string {
+  // Search upward from __dirname until we find a directory containing .gut/
+  let current = __dirname
+  for (let i = 0; i < 5; i++) {
+    const gutPath = join(current, '.gut')
+    if (existsSync(gutPath)) {
+      return current
+    }
+    current = dirname(current)
+  }
+  // Fallback: assume we're in dist/lib/ or dist/
+  return join(__dirname, '..')
+}
+
+const GUT_ROOT = findGutRoot()
 
 /**
  * Load a default template from gut's own .gut/ folder
