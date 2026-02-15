@@ -21,32 +21,36 @@ async function readSecretInput(prompt: string): Promise<string> {
     stdin.resume()
     stdin.setEncoding('utf8')
 
-    const onData = (char: string) => {
-      const charCode = char.charCodeAt(0)
+    const onData = (data: string) => {
+      // Handle each character in the data (paste operations send multiple chars)
+      for (const char of data) {
+        const charCode = char.charCodeAt(0)
 
-      if (charCode === 13 || charCode === 10) {
-        // Enter key
-        stdin.setRawMode(false)
-        stdin.pause()
-        stdin.removeListener('data', onData)
-        console.log() // New line after input
-        resolve(input)
-      } else if (charCode === 127 || charCode === 8) {
-        // Backspace
-        if (input.length > 0) {
-          input = input.slice(0, -1)
-          process.stdout.write('\b \b')
+        if (charCode === 13 || charCode === 10) {
+          // Enter key
+          stdin.setRawMode(false)
+          stdin.pause()
+          stdin.removeListener('data', onData)
+          console.log() // New line after input
+          resolve(input)
+          return
+        } else if (charCode === 127 || charCode === 8) {
+          // Backspace
+          if (input.length > 0) {
+            input = input.slice(0, -1)
+            process.stdout.write('\b \b')
+          }
+        } else if (charCode === 3) {
+          // Ctrl+C
+          stdin.setRawMode(false)
+          stdin.pause()
+          console.log()
+          process.exit(0)
+        } else if (charCode >= 32) {
+          // Printable characters
+          input += char
+          process.stdout.write('*')
         }
-      } else if (charCode === 3) {
-        // Ctrl+C
-        stdin.setRawMode(false)
-        stdin.pause()
-        console.log()
-        process.exit(0)
-      } else if (charCode >= 32) {
-        // Printable characters
-        input += char
-        process.stdout.write('*')
       }
     }
 
