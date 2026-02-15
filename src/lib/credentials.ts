@@ -1,3 +1,5 @@
+import { createRequire } from 'module'
+
 const SERVICE_NAME = 'gut-cli'
 
 export type Provider = 'gemini' | 'openai' | 'anthropic' | 'ollama'
@@ -23,11 +25,12 @@ const FALLBACK_ENV_MAP: Record<ApiKeyProvider, string> = {
   anthropic: 'ANTHROPIC_API_KEY'
 }
 
-async function getKeytar(): Promise<typeof import('keytar') | null> {
+function getKeytar(): typeof import('keytar') | null {
   try {
-    const keytar = await import('keytar')
-    // keytar is a CommonJS module, so we need to handle default export
-    return keytar.default || keytar
+    // Use createRequire to resolve keytar from gut's own node_modules
+    // This ensures it works when gut is globally installed
+    const require = createRequire(import.meta.url)
+    return require('keytar')
   } catch {
     return null
   }
@@ -37,7 +40,7 @@ export async function saveApiKey(provider: Provider, apiKey: string): Promise<vo
   if (provider === 'ollama') {
     throw new Error('Ollama does not require an API key')
   }
-  const keytar = await getKeytar()
+  const keytar = getKeytar()
   if (!keytar) {
     throw new Error('Keychain not available. Set environment variable instead.')
   }
@@ -59,7 +62,7 @@ export async function getApiKey(provider: Provider): Promise<string | null> {
   if (fallbackKey) return fallbackKey
 
   // 3. Check system keychain
-  const keytar = await getKeytar()
+  const keytar = getKeytar()
   if (!keytar) return null
   return keytar.getPassword(SERVICE_NAME, PROVIDER_KEY_MAP[provider])
 }
@@ -68,7 +71,7 @@ export async function deleteApiKey(provider: Provider): Promise<boolean> {
   if (provider === 'ollama') {
     throw new Error('Ollama does not use an API key')
   }
-  const keytar = await getKeytar()
+  const keytar = getKeytar()
   if (!keytar) {
     throw new Error('Keychain not available.')
   }
