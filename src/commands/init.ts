@@ -4,13 +4,22 @@ import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { join, dirname } from 'path'
+import { homedir } from 'os'
 import { fileURLToPath } from 'url'
+import { execSync } from 'child_process'
 import { generateText } from 'ai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { getApiKey, Provider } from '../lib/credentials.js'
 import { getLanguage } from '../lib/config.js'
+
+function openFolder(path: string): void {
+  const platform = process.platform
+  const cmd = platform === 'darwin' ? 'open' :
+              platform === 'win32' ? 'start ""' : 'xdg-open'
+  execSync(`${cmd} "${path}"`)
+}
 
 // Get gut's root directory
 const __filename = fileURLToPath(import.meta.url)
@@ -93,29 +102,43 @@ Translated template:`
 }
 
 export const initCommand = new Command('init')
-  .description('Initialize .gut/ templates in your project')
+  .description('Initialize .gut/ templates in your project or globally')
   .option('-p, --provider <provider>', 'AI provider for translation (gemini, openai, anthropic)', 'gemini')
   .option('-f, --force', 'Overwrite existing templates')
+  .option('-g, --global', 'Initialize templates globally (~/.config/gut/templates/)')
+  .option('-o, --open', 'Open the templates folder (can be used alone)')
   .option('--no-translate', 'Skip translation even if language is not English')
   .action(async (options) => {
+    const isGlobal = options.global === true
     const git = simpleGit()
 
-    const isRepo = await git.checkIsRepo()
-    if (!isRepo) {
-      console.error(chalk.red('Error: Not a git repository'))
-      process.exit(1)
+    let targetDir: string
+
+    if (isGlobal) {
+      // Global templates: ~/.config/gut/templates/
+      targetDir = join(homedir(), '.config', 'gut', 'templates')
+    } else {
+      // Project templates: .gut/
+      const isRepo = await git.checkIsRepo()
+      if (!isRepo) {
+        console.error(chalk.red('Error: Not a git repository'))
+        console.error(chalk.gray('Use --global to initialize templates globally'))
+        process.exit(1)
+      }
+
+      const repoRoot = await git.revparse(['--show-toplevel']).catch(() => process.cwd())
+      targetDir = join(repoRoot.trim(), '.gut')
     }
 
-    const repoRoot = await git.revparse(['--show-toplevel']).catch(() => process.cwd())
-    const targetDir = join(repoRoot.trim(), '.gut')
-    const sourceDir = join(GUT_ROOT, '.gut')
-
-    // Create .gut directory if it doesn't exist
+    // Create target directory if it doesn't exist
     if (!existsSync(targetDir)) {
       mkdirSync(targetDir, { recursive: true })
       console.log(chalk.green(`Created ${targetDir}`))
     }
 
+    console.log(chalk.blue(isGlobal ? 'Initializing global templates...\n' : 'Initializing project templates...\n'))
+
+    const sourceDir = join(GUT_ROOT, '.gut')
     const lang = getLanguage()
     const needsTranslation = options.translate !== false && lang !== 'en'
     const provider = options.provider.toLowerCase() as Provider
@@ -165,11 +188,27 @@ export const initCommand = new Command('init')
 
     console.log()
     if (copied > 0) {
-      console.log(chalk.green(`✓ ${copied} template(s) initialized in .gut/`))
+      const location = isGlobal ? '~/.config/gut/templates/' : '.gut/'
+      console.log(chalk.green(`✓ ${copied} template(s) initialized in ${location}`))
     }
     if (skipped > 0) {
       console.log(chalk.gray(`  ${skipped} template(s) skipped (use --force to overwrite)`))
     }
 
-    console.log(chalk.gray('\nYou can now customize these templates for your project.'))
+    if (isGlobal) {
+      console.log(chalk.gray('\nGlobal templates will be used as fallback for all projects.'))
+      console.log(chalk.gray('Project-level templates (.gut/) take priority over global templates.'))
+    } else {
+      console.log(chalk.gray('\nYou can now customize these templates for your project.'))
+    }
+
+    // Open folder if --open was specified
+    if (options.open) {
+      try {
+        openFolder(targetDir)
+        console.log(chalk.green(`\nOpened: ${targetDir}`))
+      } catch (error) {
+        console.error(chalk.red(`\nFailed to open folder: ${targetDir}`))
+      }
+    }
   })

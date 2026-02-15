@@ -1,5 +1,10 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
+import { execSync } from 'child_process'
+import { existsSync, mkdirSync } from 'fs'
+import { join } from 'path'
+import { homedir } from 'os'
+import { simpleGit } from 'simple-git'
 import {
   getConfig,
   getGlobalConfig,
@@ -9,6 +14,13 @@ import {
   VALID_LANGUAGES,
   type GutConfig
 } from '../lib/config.js'
+
+function openFolder(path: string): void {
+  const platform = process.platform
+  const cmd = platform === 'darwin' ? 'open' :
+              platform === 'win32' ? 'start ""' : 'xdg-open'
+  execSync(`${cmd} "${path}"`)
+}
 
 export const configCommand = new Command('config')
   .description('Manage gut configuration')
@@ -73,5 +85,53 @@ configCommand
     if (Object.keys(localConfig).length > 0) {
       console.log()
       console.log(chalk.gray('Local config: .gut/config.json'))
+    }
+  })
+
+configCommand
+  .command('open')
+  .description('Open configuration or templates folder')
+  .option('-t, --templates', 'Open templates folder instead of config')
+  .option('-g, --global', 'Open global folder (default)')
+  .option('-l, --local', 'Open local/project folder')
+  .action(async (options: { templates?: boolean; global?: boolean; local?: boolean }) => {
+    const git = simpleGit()
+    const isLocal = options.local === true
+
+    let targetPath: string
+
+    if (isLocal) {
+      // Local: project's .gut/ folder
+      const isRepo = await git.checkIsRepo()
+      if (!isRepo) {
+        console.error(chalk.red('Error: Not a git repository'))
+        console.error(chalk.gray('Use --global to open global config folder'))
+        process.exit(1)
+      }
+
+      const repoRoot = await git.revparse(['--show-toplevel']).catch(() => process.cwd())
+      targetPath = join(repoRoot.trim(), '.gut')
+    } else {
+      // Global
+      if (options.templates) {
+        targetPath = join(homedir(), '.config', 'gut', 'templates')
+      } else {
+        targetPath = join(homedir(), '.config', 'gut')
+      }
+    }
+
+    // Create directory if it doesn't exist
+    if (!existsSync(targetPath)) {
+      mkdirSync(targetPath, { recursive: true })
+      console.log(chalk.green(`Created ${targetPath}`))
+    }
+
+    try {
+      openFolder(targetPath)
+      console.log(chalk.green(`Opened: ${targetPath}`))
+    } catch (error) {
+      console.error(chalk.red(`Failed to open folder: ${targetPath}`))
+      console.error(chalk.gray((error as Error).message))
+      process.exit(1)
     }
   })

@@ -6,6 +6,7 @@ import { createOllama } from 'ollama-ai-provider'
 import { z } from 'zod'
 import { existsSync, readFileSync } from 'fs'
 import { join, dirname } from 'path'
+import { homedir } from 'os'
 import { fileURLToPath } from 'url'
 import { getApiKey, Provider } from './credentials.js'
 import { getLanguage, getLanguageInstruction } from './config.js'
@@ -50,16 +51,44 @@ function loadTemplate(name: string): string {
 }
 
 /**
+ * Get the global templates directory path
+ */
+function getGlobalTemplatesDir(): string {
+  return join(homedir(), '.config', 'gut', 'templates')
+}
+
+/**
+ * Find a global template from ~/.config/gut/templates/
+ * @param templateName - Name of the template file (without .md extension)
+ * @returns Template content if found, null otherwise
+ */
+export function findGlobalTemplate(templateName: string): string | null {
+  const templatePath = join(getGlobalTemplatesDir(), `${templateName}.md`)
+  if (existsSync(templatePath)) {
+    return readFileSync(templatePath, 'utf-8')
+  }
+  return null
+}
+
+/**
  * Find a user's project template from .gut/ folder
  * @param repoRoot - The root directory of the user's repository
  * @param templateName - Name of the template file (without .md extension)
  * @returns Template content if found, null otherwise
  */
 export function findTemplate(repoRoot: string, templateName: string): string | null {
-  const templatePath = join(repoRoot, '.gut', `${templateName}.md`)
-  if (existsSync(templatePath)) {
-    return readFileSync(templatePath, 'utf-8')
+  // Priority 1: Project-level template (.gut/)
+  const projectTemplatePath = join(repoRoot, '.gut', `${templateName}.md`)
+  if (existsSync(projectTemplatePath)) {
+    return readFileSync(projectTemplatePath, 'utf-8')
   }
+
+  // Priority 2: Global template (~/.config/gut/templates/)
+  const globalTemplate = findGlobalTemplate(templateName)
+  if (globalTemplate) {
+    return globalTemplate
+  }
+
   return null
 }
 

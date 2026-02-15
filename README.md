@@ -361,6 +361,15 @@ gut config set lang en --local
 
 # Get current language
 gut config get lang
+
+# Open global config folder
+gut config open
+
+# Open global templates folder
+gut config open --templates
+
+# Open project's .gut/ folder
+gut config open --local
 ```
 
 **Available settings:**
@@ -372,11 +381,18 @@ gut config get lang
 
 ### `gut init`
 
-Initialize `.gut/` templates in your project for customization.
+Initialize templates for customization (project-level or global).
 
 ```bash
 # Copy all templates to .gut/ (translates if language is not English)
 gut init
+
+# Initialize global templates (~/.config/gut/templates/)
+gut init --global
+
+# Initialize and open folder
+gut init --open
+gut init --global --open
 
 # Force overwrite existing templates
 gut init --force
@@ -388,7 +404,14 @@ gut init --no-translate
 gut init --provider openai
 ```
 
+To open templates folder without initializing, use `gut config open --templates`.
+
 Templates are automatically translated to your configured language (set via `gut lang`).
+
+**Template precedence:**
+1. Project templates: `.gut/` (highest priority)
+2. Global templates: `~/.config/gut/templates/`
+3. Built-in templates (lowest priority)
 
 ### `gut gitignore`
 
@@ -466,26 +489,35 @@ API keys are stored securely using your operating system's native credential sto
 
 Keys are never stored in plain text files or configuration files. When you run `gut auth login`, the key is encrypted and managed by your OS.
 
-## Project Configuration
+## Template Configuration
 
-gut looks for template files in your repository's `.gut/` folder. Each template uses `{{variable}}` syntax for dynamic content.
+gut supports customizable templates at two levels:
+
+**Project templates** (`.gut/`): Repository-specific customizations that apply only to the current project.
+
+**Global templates** (`~/.config/gut/templates/`): User-wide defaults that apply across all projects.
+
+**Precedence**: Project > Global > Built-in
+
+Each template uses `{{variable}}` syntax for dynamic content.
 
 | File | Purpose |
 |------|---------|
-| `.gut/commit.md` | Commit message prompt |
-| `.gut/pr.md` | PR description prompt |
-| `.gut/branch.md` | Branch naming rules |
-| `.gut/checkout.md` | Checkout branch name prompt |
-| `.gut/merge.md` | Merge conflict resolution rules |
-| `.gut/review.md` | Code review criteria |
-| `.gut/explain.md` | Explanation context |
-| `.gut/explain-file.md` | File explanation context |
-| `.gut/find.md` | Commit search context |
-| `.gut/changelog.md` | Changelog format |
-| `.gut/stash.md` | Stash name prompt |
-| `.gut/summary.md` | Work summary format |
-| `.gut/gitignore.md` | Gitignore generation prompt |
-| `.github/pull_request_template.md` | GitHub PR template (prioritized over `.gut/pr.md`) |
+| `commit.md` | Commit message prompt |
+| `pr.md` | PR description prompt |
+| `branch.md` | Branch naming rules |
+| `checkout.md` | Checkout branch name prompt |
+| `merge.md` | Merge conflict resolution rules |
+| `review.md` | Code review criteria |
+| `explain.md` | Explanation context |
+| `explain-file.md` | File explanation context |
+| `find.md` | Commit search context |
+| `changelog.md` | Changelog format |
+| `stash.md` | Stash name prompt |
+| `summary.md` | Work summary format |
+| `gitignore.md` | Gitignore generation prompt |
+
+**Special case**: `.github/pull_request_template.md` is prioritized over `pr.md` for PR descriptions.
 
 ## Development
 
