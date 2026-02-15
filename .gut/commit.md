@@ -10,7 +10,3 @@ Analyze the git diff and generate a concise, meaningful commit message.
 - Description should be lowercase, imperative mood, no period at end
 - Keep the first line under 72 characters
 - If changes are complex, add a blank line and bullet points for details
-
-## Output
-
-Respond with ONLY the commit message, nothing else.

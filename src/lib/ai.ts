@@ -98,18 +98,21 @@ export function findTemplate(repoRoot: string, templateName: string): string | n
 /**
  * Build a prompt with context in XML format and instructions from template.
  * Templates don't need to include variables - context is automatically prepended.
+ * Output format instructions are also injected automatically, so templates remain pure instructions.
  *
  * @param userTemplate - User-provided template string or null/undefined
  * @param templateName - Name of the default template file in .gut/ (without .md extension)
  * @param context - Context data to include (diff, commits, etc.)
  * @param language - Language for AI responses
+ * @param outputFormat - Output format instructions (auto-injected, not user-editable)
  * @returns Complete prompt with XML context and instructions
  */
 function buildPrompt(
   userTemplate: string | null | undefined,
   templateName: string,
   context: Record<string, string | undefined>,
-  language?: Language
+  language?: Language,
+  outputFormat?: string
 ): string {
   // Build XML context
   let contextXml = '<context>\n'
@@ -128,7 +131,12 @@ function buildPrompt(
     ? '\n\nIMPORTANT: Respond in Japanese (日本語で回答してください).'
     : ''
 
-  return contextXml + '<instructions>\n' + template + langInstruction + '\n</instructions>'
+  // Build output format section (auto-injected, not user-editable)
+  const outputSection = outputFormat
+    ? `\n\n<output-format>\n${outputFormat}\n</output-format>`
+    : ''
+
+  return contextXml + '<instructions>\n' + template + langInstruction + '\n</instructions>' + outputSection
 }
 
 const DEFAULT_MODELS: Record<Provider, string> = {
@@ -191,7 +199,7 @@ export async function generateCommitMessage(
 
   const prompt = buildPrompt(template, 'commit', {
     diff: diff.slice(0, 8000)
-  }, options.language)
+  }, options.language, 'Respond with ONLY the commit message, nothing else.')
 
   const result = await generateText({
     model,
@@ -219,7 +227,13 @@ export async function generatePRDescription(
     currentBranch: context.currentBranch,
     commits: context.commits.map((c) => `- ${c}`).join('\n'),
     diff: context.diff.slice(0, 6000)
-  }, options.language)
+  }, options.language, `Respond in JSON format:
+\`\`\`json
+{
+  "title": "...",
+  "body": "..."
+}
+\`\`\``)
 
   const result = await generateText({
     model,
@@ -518,7 +532,7 @@ export async function generateBranchName(
     description,
     type: context?.type,
     issue: context?.issue
-  }, options.language)
+  }, options.language, 'Respond with ONLY the branch name, nothing else.')
 
   const result = await generateText({
     model,
@@ -538,7 +552,7 @@ export async function generateBranchNameFromDiff(
 
   const prompt = buildPrompt(template, 'checkout', {
     diff: diff.slice(0, 8000)
-  }, options.language)
+  }, options.language, 'Respond with ONLY the branch name, nothing else.')
 
   const result = await generateText({
     model,
@@ -558,7 +572,7 @@ export async function generateStashName(
 
   const prompt = buildPrompt(template, 'stash', {
     diff: diff.slice(0, 4000)
-  }, options.language)
+  }, options.language, 'Respond with ONLY the stash name, nothing else.')
 
   const result = await generateText({
     model,
@@ -681,7 +695,7 @@ export async function generateGitignore(
     files: context.files,
     configFiles: context.configFiles,
     existingGitignore: context.existingGitignore
-  }, options.language)
+  }, options.language, 'Respond with ONLY the .gitignore content, nothing else. No explanations or markdown code blocks.')
 
   const result = await generateText({
     model,
