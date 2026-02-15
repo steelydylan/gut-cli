@@ -9,13 +9,4 @@ Analyze the changes based on the target type (commit, PR, file changes, etc.) an
 - The broader context and purpose
 - Any important implications or side effects
 
-## Output
-
 Explain in a way that helps someone understand not just the "what" but the "why" behind these changes.
-
-Respond with a JSON object containing:
-- summary: One-line summary
-- purpose: The purpose and role of this code
-- changes: Array of { file, description }
-- impact: What impact or role this has in the project
-- notes: Important considerations or caveats (optional)

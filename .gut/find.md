@@ -11,9 +11,3 @@ Find the commits that best match the user's query. Consider:
 
 Return commits ordered by relevance (most relevant first).
 Only include commits that actually match the query - if none match well, return an empty array.
-
-## Output
-
-Respond with a JSON object containing:
-- matches: Array of { hash, reason }
-- summary: Brief summary of the search results (optional)

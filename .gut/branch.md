@@ -9,7 +9,3 @@ Generate a clean, descriptive branch name based on the description. If a branch 
 - Use kebab-case for description
 - Keep it short (under 50 chars total)
 - No special characters except hyphens and slashes
-
-## Output
-
-Respond with ONLY the branch name, nothing else.

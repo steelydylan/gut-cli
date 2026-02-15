@@ -15,7 +15,3 @@ Analyze the git diff and generate a clean, descriptive branch name that captures
 - The main purpose of the changes
 - Whether it's a feature, fix, refactor, etc.
 - Key files or functionality being modified
-
-## Output
-
-Respond with ONLY the branch name, nothing else.

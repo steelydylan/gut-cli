@@ -14,7 +14,3 @@ Analyze the project structure and configuration files to generate an appropriate
 - Do NOT ignore files that should be tracked (source code, configs, etc.)
 - Keep the file organized with comments for each section
 - If an existing .gitignore is provided, preserve project-specific patterns from it
-
-## Output
-
-Respond with ONLY the .gitignore content, nothing else. Include section comments for clarity.

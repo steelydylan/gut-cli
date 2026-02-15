@@ -8,7 +8,3 @@ Generate a short, descriptive stash name based on the diff.
 - Keep it under 50 characters total
 - Be specific about what the changes do
 - Use present tense
-
-## Output
-
-Respond with ONLY the stash name, nothing else.

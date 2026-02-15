@@ -10,13 +10,4 @@ Analyze the file content and explain what it does, its purpose, and its role in 
 - Dependencies and what it interacts with
 - Any important patterns or architecture decisions
 
-## Output
-
 Explain in a way that helps someone quickly understand this file's purpose and how it fits into the larger codebase.
-
-Respond with a JSON object containing:
-- summary: One-line summary
-- purpose: The purpose and role of this code
-- changes: Array of { file, description }
-- impact: What impact or role this has in the project
-- notes: Important considerations or caveats (optional)
