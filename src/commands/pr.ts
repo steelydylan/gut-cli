@@ -158,18 +158,28 @@ export const prCommand = new Command('pr')
         if (answer.toLowerCase() === 'y') {
           const createSpinner = ora('Creating PR...').start()
           try {
-            // Escape quotes in title and body
-            const escapedTitle = title.replace(/"/g, '\\"')
-            const escapedBody = body.replace(/"/g, '\\"')
+            // Escape quotes and backticks in title for shell safety
+            const escapedTitle = title
+              .replace(/"/g, '\\"')
+              .replace(/`/g, '\\`')
+              .replace(/\$/g, '\\$')
 
-            execSync(
-              `gh pr create --title "${escapedTitle}" --body "${escapedBody}" --base ${baseBranch}`,
-              { stdio: 'pipe' }
-            )
+            // Use --body-file - to pass body via stdin (avoids shell escaping issues)
+            execSync(`gh pr create --title "${escapedTitle}" --body-file - --base ${baseBranch}`, {
+              stdio: ['pipe', 'pipe', 'pipe'],
+              input: body
+            })
             createSpinner.succeed('PR created successfully!')
-          } catch {
+          } catch (err) {
             createSpinner.fail('Failed to create PR')
-            console.error(chalk.gray('Make sure gh CLI is authenticated: gh auth login'))
+            if (err instanceof Error && 'stderr' in err) {
+              const stderr = (err as { stderr: Buffer }).stderr?.toString?.() || ''
+              if (stderr.includes('auth')) {
+                console.error(chalk.gray('Make sure gh CLI is authenticated: gh auth login'))
+              } else if (stderr) {
+                console.error(chalk.red(stderr.trim()))
+              }
+            }
           }
         } else if (!options.copy) {
           console.log(chalk.gray('\nTip: Use --copy to copy to clipboard'))
