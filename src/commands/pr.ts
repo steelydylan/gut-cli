@@ -165,11 +165,18 @@ export const prCommand = new Command('pr')
               .replace(/\$/g, '\\$')
 
             // Use --body-file - to pass body via stdin (avoids shell escaping issues)
-            execSync(`gh pr create --title "${escapedTitle}" --body-file - --base ${baseBranch}`, {
-              stdio: ['pipe', 'pipe', 'pipe'],
-              input: body
-            })
+            const result = execSync(
+              `gh pr create --title "${escapedTitle}" --body-file - --base ${baseBranch}`,
+              {
+                stdio: ['pipe', 'pipe', 'pipe'],
+                input: body
+              }
+            )
+            const prUrl = result.toString().trim()
             createSpinner.succeed('PR created successfully!')
+            if (prUrl) {
+              console.log(chalk.green(`\n🔗 ${prUrl}`))
+            }
           } catch (err) {
             createSpinner.fail('Failed to create PR')
             if (err instanceof Error && 'stderr' in err) {

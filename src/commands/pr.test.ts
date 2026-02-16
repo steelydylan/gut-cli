@@ -201,5 +201,40 @@ describe('prCommand', () => {
       )
       expect(warningCall).toBeDefined()
     })
+
+    it('should display PR URL after successful creation', async () => {
+      const { isGhCliInstalled } = await import('../lib/gh.js')
+      const { execSync } = await import('node:child_process')
+      const readline = await import('node:readline')
+
+      // Mock gh CLI as installed
+      vi.mocked(isGhCliInstalled).mockReturnValue(true)
+
+      // Mock user confirms PR creation
+      vi.mocked(readline.createInterface).mockReturnValue({
+        question: vi.fn((_prompt: string, callback: (answer: string) => void) => callback('y')),
+        close: vi.fn()
+      } as unknown as ReturnType<typeof readline.createInterface>)
+
+      // Mock gh pr create returning PR URL
+      const prUrl = 'https://github.com/owner/repo/pull/123'
+      vi.mocked(execSync).mockReturnValue(Buffer.from(prUrl))
+
+      const consoleSpy = vi.spyOn(console, 'log')
+
+      await prCommand.parseAsync([], { from: 'user' })
+
+      // Verify gh pr create was called
+      expect(execSync).toHaveBeenCalledWith(
+        expect.stringContaining('gh pr create'),
+        expect.any(Object)
+      )
+
+      // Verify PR URL was displayed
+      const urlCall = consoleSpy.mock.calls.find(
+        (call) => typeof call[0] === 'string' && call[0].includes(prUrl)
+      )
+      expect(urlCall).toBeDefined()
+    })
   })
 })
