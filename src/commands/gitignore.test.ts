@@ -99,12 +99,26 @@ import { gitignoreCommand } from './gitignore.js'
 describe('gitignoreCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockExistsSync.mockReturnValue(false)
+    // Reset Commander options to prevent state leakage between tests
+    // @ts-expect-error - accessing internal Commander state
+    gitignoreCommand._optionValues = { output: '.gitignore' }
+    // Allow gut's default template to be found, but return false for .gitignore in repo
+    mockExistsSync.mockImplementation((path: string) => {
+      if (typeof path === 'string' && path.includes('.gut/gitignore.md')) {
+        return true
+      }
+      return false
+    })
     mockReaddirSync.mockReturnValue([
       { name: 'src', isDirectory: () => true },
       { name: 'package.json', isDirectory: () => false }
     ])
-    mockReadFileSync.mockReturnValue('{"name": "test"}')
+    mockReadFileSync.mockImplementation((path: string) => {
+      if (typeof path === 'string' && path.includes('.gut/gitignore.md')) {
+        return 'Generate a .gitignore file for this project.'
+      }
+      return '{"name": "test"}'
+    })
   })
 
   afterEach(() => {
@@ -139,9 +153,15 @@ describe('gitignoreCommand', () => {
   describe('existing gitignore handling', () => {
     it('should detect existing gitignore', async () => {
       mockExistsSync.mockImplementation((path: string) => {
+        if (typeof path === 'string' && path.includes('.gut/gitignore.md')) {
+          return true
+        }
         return path.includes('.gitignore')
       })
       mockReadFileSync.mockImplementation((path: string) => {
+        if (typeof path === 'string' && path.includes('.gut/gitignore.md')) {
+          return 'Generate a .gitignore file for this project.'
+        }
         if (path.includes('.gitignore')) {
           return '# existing\nnode_modules/'
         }
@@ -157,9 +177,17 @@ describe('gitignoreCommand', () => {
   describe('project detection', () => {
     it('should detect config files for context', async () => {
       mockExistsSync.mockImplementation((path: string) => {
+        if (typeof path === 'string' && path.includes('.gut/gitignore.md')) {
+          return true
+        }
         return path.includes('package.json') || path.includes('tsconfig.json')
       })
-      mockReadFileSync.mockReturnValue('{}')
+      mockReadFileSync.mockImplementation((path: string) => {
+        if (typeof path === 'string' && path.includes('.gut/gitignore.md')) {
+          return 'Generate a .gitignore file for this project.'
+        }
+        return '{}'
+      })
 
       await gitignoreCommand.parseAsync(['--stdout'], { from: 'user' })
 

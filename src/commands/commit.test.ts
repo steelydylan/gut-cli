@@ -69,9 +69,9 @@ const mockGit = {
   status: vi.fn(() =>
     Promise.resolve({
       staged: ['file.ts'],
-      modified: [],
-      not_added: [],
-      created: []
+      modified: [] as string[],
+      not_added: [] as string[],
+      created: [] as string[]
     })
   ),
   commit: vi.fn(() => Promise.resolve())

@@ -33,7 +33,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepare": "husky"
   },
   "keywords": [
     "git",
@@ -78,10 +79,17 @@
     "simple-git": "^3.27.0",
     "zod": "^3.23.0"
   },
+  "lint-staged": {
+    "src/**/*.{ts,tsx,js,jsx}": [
+      "biome check --write"
+    ]
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.0",
     "@types/node": "^22.10.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
     "vitest": "^4.0.18"

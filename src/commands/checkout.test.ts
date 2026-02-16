@@ -75,10 +75,10 @@ const mockGit = {
   diff: vi.fn(() => Promise.resolve('diff content')),
   status: vi.fn(() =>
     Promise.resolve({
-      staged: [],
+      staged: [] as string[],
       modified: ['file.ts'],
-      not_added: [],
-      created: []
+      not_added: [] as string[],
+      created: [] as string[]
     })
   ),
   checkoutLocalBranch: vi.fn(() => Promise.resolve())
