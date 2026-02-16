@@ -11,7 +11,7 @@ import { generateText } from 'ai'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
-import { getApiKey, resolveProvider } from '../lib/credentials.js'
+import { getApiKey, resolveProvider, type Provider } from '../lib/credentials.js'
 import { getLanguage, getDefaultModel } from '../lib/config.js'
 
 function openFolder(path: string): void {

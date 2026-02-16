@@ -53,7 +53,7 @@ describe('explain command - git operations', () => {
       await repo.git.commit('test commit')
 
       const log = await repo.git.log({ maxCount: 1 })
-      const diff = await repo.git.show([log.latest?.hash, '--format='])
+      const diff = await repo.git.show([log.latest!.hash, '--format='])
 
       expect(diff).toContain('diff-test.ts')
     })

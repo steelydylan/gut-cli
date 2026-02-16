@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
 
-// Mock process.exit to prevent test from exiting
+// Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
   throw new Error('process.exit called')
 })
@@ -17,7 +17,16 @@ vi.mock('ora', () => ({
     stop: vi.fn().mockReturnThis(),
     fail: vi.fn().mockReturnThis(),
     info: vi.fn().mockReturnThis(),
+    succeed: vi.fn().mockReturnThis(),
     text: ''
+  }))
+}))
+
+// Mock readline for confirmation prompts
+vi.mock('node:readline', () => ({
+  createInterface: vi.fn(() => ({
+    question: vi.fn((_prompt: string, callback: (answer: string) => void) => callback('y')),
+    close: vi.fn()
   }))
 }))
 
@@ -27,7 +36,7 @@ const mockModel = new MockLanguageModelV1({
     rawCall: { rawPrompt: null, rawSettings: {} },
     finishReason: 'stop' as const,
     usage: { promptTokens: 10, completionTokens: 20 },
-    text: 'feat(test): add new feature'
+    text: 'feature/add-new-feature'
   })
 })
 
@@ -37,7 +46,7 @@ vi.mock('ai', async () => {
   return {
     ...actual,
     generateText: vi.fn(async () => ({
-      text: 'feat(test): add new feature'
+      text: 'feature/add-new-feature'
     }))
   }
 })
@@ -50,8 +59,7 @@ vi.mock('@ai-sdk/google', () => ({
 // Mock credentials
 vi.mock('../lib/credentials.js', () => ({
   resolveProvider: vi.fn(() => Promise.resolve('gemini')),
-  getApiKey: vi.fn(() => 'test-api-key'),
-  Provider: {}
+  getApiKey: vi.fn(() => 'test-api-key')
 }))
 
 // Mock config
@@ -64,33 +72,31 @@ vi.mock('../lib/config.js', () => ({
 const mockGit = {
   checkIsRepo: vi.fn(() => Promise.resolve(true)),
   revparse: vi.fn(() => Promise.resolve('/test/repo')),
-  add: vi.fn(() => Promise.resolve()),
   diff: vi.fn(() => Promise.resolve('diff content')),
   status: vi.fn(() => Promise.resolve({
-    staged: ['file.ts'],
-    modified: [],
+    staged: [],
+    modified: ['file.ts'],
     not_added: [],
     created: []
   })),
-  commit: vi.fn(() => Promise.resolve())
+  checkoutLocalBranch: vi.fn(() => Promise.resolve())
 }
 
 vi.mock('simple-git', () => ({
   simpleGit: vi.fn(() => mockGit)
 }))
 
-// Import the command after mocks are set up
-import { commitCommand } from './commit.js'
+// Import the command after mocks
+import { checkoutCommand } from './checkout.js'
 
-describe('commitCommand', () => {
+describe('checkoutCommand', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Reset mock implementations
     mockGit.checkIsRepo.mockResolvedValue(true)
     mockGit.diff.mockResolvedValue('diff --git a/file.ts\n+new content')
     mockGit.status.mockResolvedValue({
-      staged: ['file.ts'],
-      modified: [],
+      staged: [],
+      modified: ['file.ts'],
       not_added: [],
       created: []
     })
@@ -100,49 +106,37 @@ describe('commitCommand', () => {
     vi.clearAllMocks()
   })
 
-  describe('with --commit flag', () => {
-    it('should generate and commit message automatically', async () => {
-      await commitCommand.parseAsync(['--commit'], { from: 'user' })
+  describe('branch name generation from diff', () => {
+    it('should generate branch name and checkout with --yes flag', async () => {
+      await checkoutCommand.parseAsync(['--yes'], { from: 'user' })
+
+      expect(mockGit.diff).toHaveBeenCalled()
+      expect(mockGit.checkoutLocalBranch).toHaveBeenCalledWith('feature/add-new-feature')
+    })
+
+    it('should use staged changes only with --staged flag', async () => {
+      mockGit.diff.mockResolvedValue('staged diff content')
+
+      await checkoutCommand.parseAsync(['--yes', '--staged'], { from: 'user' })
 
       expect(mockGit.diff).toHaveBeenCalledWith(['--cached'])
-      expect(mockGit.commit).toHaveBeenCalledWith('feat(test): add new feature')
     })
 
-    it('should use specified provider', async () => {
-      const { resolveProvider } = await import('../lib/credentials.js')
-
-      await commitCommand.parseAsync(['--commit', '-p', 'openai'], { from: 'user' })
-
-      expect(resolveProvider).toHaveBeenCalledWith('openai')
-    })
   })
 
-  describe('with --all flag', () => {
-    it('should stage all changes before generating', async () => {
-      await commitCommand.parseAsync(['--commit', '--all'], { from: 'user' })
-
-      expect(mockGit.add).toHaveBeenCalledWith('-A')
-    })
-  })
-
-  describe('auto-staging behavior', () => {
-    it('should auto-stage when nothing is staged', async () => {
-      mockGit.diff
-        .mockResolvedValueOnce('') // First call: --cached returns empty
-        .mockResolvedValueOnce('unstaged diff') // Second call: unstaged diff
-        .mockResolvedValueOnce('staged diff after auto-stage') // Third call: after staging
-
+  describe('untracked files handling', () => {
+    it('should handle untracked files when no diff exists', async () => {
+      mockGit.diff.mockResolvedValue('')
       mockGit.status.mockResolvedValue({
-        staged: [] as string[],
-        modified: ['file.ts'],
-        not_added: [] as string[],
-        created: [] as string[]
+        staged: [],
+        modified: [],
+        not_added: ['new-file.ts'],
+        created: []
       })
 
-      await commitCommand.parseAsync(['--commit'], { from: 'user' })
+      await checkoutCommand.parseAsync(['--yes'], { from: 'user' })
 
-      // Should call add('-A') to auto-stage
-      expect(mockGit.add).toHaveBeenCalledWith('-A')
+      expect(mockGit.checkoutLocalBranch).toHaveBeenCalled()
     })
   })
 
@@ -151,13 +145,13 @@ describe('commitCommand', () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
       await expect(
-        commitCommand.parseAsync(['--commit'], { from: 'user' })
+        checkoutCommand.parseAsync(['--yes'], { from: 'user' })
       ).rejects.toThrow('process.exit called')
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
 
-    it('should exit when no changes to commit', async () => {
+    it('should exit when no changes found', async () => {
       mockGit.diff.mockResolvedValue('')
       mockGit.status.mockResolvedValue({
         staged: [],
@@ -167,11 +161,20 @@ describe('commitCommand', () => {
       })
 
       await expect(
-        commitCommand.parseAsync(['--commit'], { from: 'user' })
+        checkoutCommand.parseAsync(['--yes'], { from: 'user' })
       ).rejects.toThrow('process.exit called')
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
   })
-})
 
+  describe('provider selection', () => {
+    it('should use specified provider', async () => {
+      const { resolveProvider } = await import('../lib/credentials.js')
+
+      await checkoutCommand.parseAsync(['--yes', '-p', 'openai'], { from: 'user' })
+
+      expect(resolveProvider).toHaveBeenCalledWith('openai')
+    })
+  })
+})
