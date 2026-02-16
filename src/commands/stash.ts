@@ -45,8 +45,8 @@ export const stashCommand = new Command('stash')
       try {
         await git.stash(['apply', `stash@{${index}}`])
         console.log(chalk.green(`✓ Applied stash@{${index}}`))
-      } catch (error) {
-        console.error(chalk.red(`Failed to apply stash: ${error instanceof Error ? error.message : 'Unknown error'}`))
+      } catch (err) {
+        console.error(chalk.red(`Failed to apply stash: ${err instanceof Error ? err.message : 'Unknown error'}`))
         process.exit(1)
       }
       return
@@ -58,8 +58,8 @@ export const stashCommand = new Command('stash')
       try {
         await git.stash(['pop', `stash@{${index}}`])
         console.log(chalk.green(`✓ Popped stash@{${index}}`))
-      } catch (error) {
-        console.error(chalk.red(`Failed to pop stash: ${error instanceof Error ? error.message : 'Unknown error'}`))
+      } catch (err) {
+        console.error(chalk.red(`Failed to pop stash: ${err instanceof Error ? err.message : 'Unknown error'}`))
         process.exit(1)
       }
       return
@@ -71,8 +71,8 @@ export const stashCommand = new Command('stash')
       try {
         await git.stash(['drop', `stash@{${index}}`])
         console.log(chalk.green(`✓ Dropped stash@{${index}}`))
-      } catch (error) {
-        console.error(chalk.red(`Failed to drop stash: ${error instanceof Error ? error.message : 'Unknown error'}`))
+      } catch (err) {
+        console.error(chalk.red(`Failed to drop stash: ${err instanceof Error ? err.message : 'Unknown error'}`))
         process.exit(1)
       }
       return
@@ -129,7 +129,7 @@ export const stashCommand = new Command('stash')
           const template = findTemplate(repoRoot.trim(), 'stash')
           stashName = await generateStashName(fullDiff, { provider, model: options.model }, template || undefined)
           spinner.stop()
-        } catch (error) {
+        } catch {
           spinner.fail('Failed to generate name, using default')
           stashName = `WIP: ${status.modified.length} modified, ${status.not_added.length} untracked`
         }

@@ -182,9 +182,9 @@ export const initCommand = new Command('init')
         try {
           content = await translateTemplate(content, lang, provider)
           spinner.succeed(`Translated: ${filename}`)
-        } catch (error) {
+        } catch (err) {
           spinner.fail(`Failed to translate ${filename}`)
-          console.error(chalk.red(`  ${error instanceof Error ? error.message : 'Unknown error'}`))
+          console.error(chalk.red(`  ${err instanceof Error ? err.message : 'Unknown error'}`))
           // Fall back to original content
           console.log(chalk.gray(`  Using original English template`))
         }
@@ -217,7 +217,7 @@ export const initCommand = new Command('init')
       try {
         openFolder(targetDir)
         console.log(chalk.green(`\nOpened: ${targetDir}`))
-      } catch (error) {
+      } catch {
         console.error(chalk.red(`\nFailed to open folder: ${targetDir}`))
       }
     }

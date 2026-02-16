@@ -28,11 +28,11 @@ async function getPRDiff(prNumber: string): Promise<{ diff: string; prInfo: PRIn
         url: prJson.url
       }
     }
-  } catch (error) {
-    if (error instanceof Error && error.message.includes('gh: command not found')) {
-      throw new Error('GitHub CLI (gh) is not installed. Install it from https://cli.github.com/')
+  } catch (err) {
+    if (err instanceof Error && err.message.includes('gh: command not found')) {
+      throw new Error('GitHub CLI (gh) is not installed. Install it from https://cli.github.com/', { cause: err })
     }
-    throw error
+    throw err
   }
 }
 

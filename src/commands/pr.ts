@@ -168,7 +168,7 @@ export const prCommand = new Command('pr')
               { stdio: 'pipe' }
             )
             createSpinner.succeed('PR created successfully!')
-          } catch (error) {
+          } catch {
             createSpinner.fail('Failed to create PR')
             console.error(chalk.gray('Make sure gh CLI is authenticated: gh auth login'))
           }
@@ -176,9 +176,9 @@ export const prCommand = new Command('pr')
           console.log(chalk.gray('\nTip: Use --copy to copy to clipboard'))
         }
       }
-    } catch (error) {
+    } catch (err) {
       spinner.fail('Failed to generate PR description')
-      console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'))
+      console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'))
       process.exit(1)
     }
   })

@@ -42,7 +42,7 @@ export const mergeCommand = new Command('merge')
       await git.merge([branch])
       console.log(chalk.green('✓ Merged successfully (no conflicts)'))
       return
-    } catch (error) {
+    } catch {
       // Merge failed, likely due to conflicts
     }
 
@@ -123,9 +123,9 @@ export const mergeCommand = new Command('merge')
         } else {
           console.log(chalk.yellow(`✗ Rejected - resolve manually: ${file}`))
         }
-      } catch (error) {
+      } catch (err) {
         spinner.fail('AI resolution failed')
-        console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'))
+        console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'))
         console.log(chalk.yellow(`Please resolve manually: ${file}`))
       }
     }

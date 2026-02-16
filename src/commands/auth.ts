@@ -93,9 +93,9 @@ authCommand
     try {
       await saveApiKey(provider, apiKey.trim())
       console.log(chalk.green(`\n✓ API key for ${getProviderDisplayName(provider)} saved to system keychain`))
-    } catch (error) {
+    } catch (err) {
       console.error(chalk.red('Failed to save API key'))
-      console.error(chalk.gray(error instanceof Error ? error.message : 'Unknown error'))
+      console.error(chalk.gray(err instanceof Error ? err.message : 'Unknown error'))
       process.exit(1)
     }
   })
@@ -119,7 +119,7 @@ authCommand
       } else {
         console.log(chalk.yellow(`No API key found for ${getProviderDisplayName(provider)}`))
       }
-    } catch (error) {
+    } catch {
       console.error(chalk.red('Failed to remove API key'))
       process.exit(1)
     }
@@ -143,7 +143,7 @@ authCommand
         chalk.gray('\nKeys can also be set via environment variables:')
       )
       console.log(chalk.gray('  GUT_GEMINI_API_KEY, GUT_OPENAI_API_KEY, GUT_ANTHROPIC_API_KEY\n'))
-    } catch (error) {
+    } catch {
       console.error(chalk.red('Failed to check status'))
       process.exit(1)
     }

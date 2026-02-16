@@ -97,15 +97,15 @@ export const cleanupCommand = new Command('cleanup')
               // Remote branch might not exist, ignore
             }
           }
-        } catch (error) {
+        } catch {
           deleteSpinner.warn(`Failed to delete ${branch}`)
         }
       }
 
       deleteSpinner.succeed(chalk.green(`Deleted ${mergedBranches.length} branch(es)`))
-    } catch (error) {
+    } catch (err) {
       spinner.fail('Failed to cleanup branches')
-      console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'))
+      console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'))
       process.exit(1)
     }
   })

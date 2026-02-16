@@ -81,7 +81,7 @@ export const syncCommand = new Command('sync')
         } else {
           await git.rebase([trackingBranch])
         }
-      } catch (error) {
+      } catch {
         spinner.fail(`${strategy} failed - you may have conflicts`)
         console.log(chalk.yellow('\nResolve conflicts and then:'))
         if (options.merge) {
@@ -113,9 +113,9 @@ export const syncCommand = new Command('sync')
           try {
             await git.push()
             pushSpinner.succeed(chalk.green(`Pushed ${ahead} commit(s)`))
-          } catch (error) {
+          } catch (err) {
             pushSpinner.fail('Push failed')
-            console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'))
+            console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'))
           }
         } else {
           console.log(chalk.cyan(`  ↑ ${ahead} commit(s) ahead`))
@@ -134,9 +134,9 @@ export const syncCommand = new Command('sync')
         }
       }
 
-    } catch (error) {
+    } catch (err) {
       spinner.fail('Sync failed')
-      console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'))
+      console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'))
       process.exit(1)
     }
   })
