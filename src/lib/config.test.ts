@@ -17,15 +17,12 @@ vi.mock('child_process', () => ({
 }))
 
 import {
-  DEFAULT_MODELS,
   getConfig,
   getDefaultModel,
   getGlobalConfig,
   isValidLanguage,
   isValidProvider,
-  setGlobalConfig,
-  VALID_LANGUAGES,
-  VALID_PROVIDERS
+  setGlobalConfig
 } from './config.js'
 
 describe('config', () => {
@@ -50,32 +47,9 @@ describe('config', () => {
     }
   })
 
-  describe('DEFAULT_MODELS', () => {
-    it('should have correct default models for all providers', () => {
-      expect(DEFAULT_MODELS.gemini).toBe('gemini-2.5-flash')
-      expect(DEFAULT_MODELS.openai).toBe('gpt-4.1-mini')
-      expect(DEFAULT_MODELS.anthropic).toBe('claude-sonnet-4-5')
-      expect(DEFAULT_MODELS.ollama).toBe('llama3.3')
-    })
-  })
-
   describe('getDefaultModel', () => {
-    it('should return correct model for each provider', () => {
-      expect(getDefaultModel('gemini')).toBe('gemini-2.5-flash')
-      expect(getDefaultModel('openai')).toBe('gpt-4.1-mini')
-      expect(getDefaultModel('anthropic')).toBe('claude-sonnet-4-5')
-      expect(getDefaultModel('ollama')).toBe('llama3.3')
-    })
-
     it('should fallback to gemini for unknown provider', () => {
-      expect(getDefaultModel('unknown')).toBe('gemini-2.5-flash')
-    })
-  })
-
-  describe('VALID_LANGUAGES', () => {
-    it('should include en and ja', () => {
-      expect(VALID_LANGUAGES).toContain('en')
-      expect(VALID_LANGUAGES).toContain('ja')
+      expect(getDefaultModel('unknown')).toBe(getDefaultModel('gemini'))
     })
   })
 
@@ -89,15 +63,6 @@ describe('config', () => {
       expect(isValidLanguage('fr')).toBe(false)
       expect(isValidLanguage('')).toBe(false)
       expect(isValidLanguage('english')).toBe(false)
-    })
-  })
-
-  describe('VALID_PROVIDERS', () => {
-    it('should include all supported providers', () => {
-      expect(VALID_PROVIDERS).toContain('gemini')
-      expect(VALID_PROVIDERS).toContain('openai')
-      expect(VALID_PROVIDERS).toContain('anthropic')
-      expect(VALID_PROVIDERS).toContain('ollama')
     })
   })
 

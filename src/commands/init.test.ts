@@ -1,3 +1,4 @@
+import { MockLanguageModelV1 } from 'ai/test'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock console methods
@@ -34,28 +35,31 @@ vi.mock('node:fs', () => ({
   writeFileSync: (...args: unknown[]) => mockWriteFileSync(...args)
 }))
 
-// Mock AI SDK for translation
-vi.mock('ai', async () => {
-  const actual = await vi.importActual('ai')
-  return {
-    ...actual,
-    generateText: vi.fn(async () => ({
-      text: 'Translated content'
-    }))
-  }
+// Create mock model for generateText
+const mockModel = new MockLanguageModelV1({
+  doGenerate: async () => ({
+    rawCall: { rawPrompt: null, rawSettings: {} },
+    finishReason: 'stop' as const,
+    usage: { promptTokens: 10, completionTokens: 20 },
+    text: 'Translated content'
+  })
 })
 
-// Mock provider SDKs
+// Mock provider SDKs to use MockLanguageModelV1
 vi.mock('@ai-sdk/google', () => ({
-  createGoogleGenerativeAI: vi.fn(() => vi.fn())
+  createGoogleGenerativeAI: vi.fn(() => () => mockModel)
 }))
 
 vi.mock('@ai-sdk/openai', () => ({
-  createOpenAI: vi.fn(() => vi.fn())
+  createOpenAI: vi.fn(() => () => mockModel)
 }))
 
 vi.mock('@ai-sdk/anthropic', () => ({
-  createAnthropic: vi.fn(() => vi.fn())
+  createAnthropic: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('ollama-ai-provider', () => ({
+  createOllama: vi.fn(() => () => mockModel)
 }))
 
 // Mock credentials

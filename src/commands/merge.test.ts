@@ -36,34 +36,36 @@ vi.mock('node:readline', () => ({
   }))
 }))
 
-// Create mock model
+// Create mock model for generateObject (returns JSON string)
 const mockModel = new MockLanguageModelV1({
+  defaultObjectGenerationMode: 'json',
   doGenerate: async () => ({
     rawCall: { rawPrompt: null, rawSettings: {} },
     finishReason: 'stop' as const,
     usage: { promptTokens: 10, completionTokens: 20 },
-    text: ''
+    text: JSON.stringify({
+      resolvedContent: 'merged content',
+      explanation: 'Combined both changes',
+      strategy: 'combined'
+    })
   })
 })
 
-// Mock AI SDK
-vi.mock('ai', async () => {
-  const actual = await vi.importActual('ai')
-  return {
-    ...actual,
-    generateObject: vi.fn(async () => ({
-      object: {
-        resolvedContent: 'merged content',
-        explanation: 'Combined both changes',
-        strategy: 'combined'
-      }
-    }))
-  }
-})
-
-// Mock provider SDKs
+// Mock provider SDKs to use MockLanguageModelV1
 vi.mock('@ai-sdk/google', () => ({
   createGoogleGenerativeAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/openai', () => ({
+  createOpenAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/anthropic', () => ({
+  createAnthropic: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('ollama-ai-provider', () => ({
+  createOllama: vi.fn(() => () => mockModel)
 }))
 
 // Mock credentials

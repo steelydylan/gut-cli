@@ -31,20 +31,21 @@ const mockModel = new MockLanguageModelV1({
   })
 })
 
-// Mock AI SDK
-vi.mock('ai', async () => {
-  const actual = await vi.importActual('ai')
-  return {
-    ...actual,
-    generateText: vi.fn(async () => ({
-      text: 'feat(test): add new feature'
-    }))
-  }
-})
-
-// Mock provider SDKs
+// Mock provider SDKs to use MockLanguageModelV1
 vi.mock('@ai-sdk/google', () => ({
   createGoogleGenerativeAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/openai', () => ({
+  createOpenAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/anthropic', () => ({
+  createAnthropic: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('ollama-ai-provider', () => ({
+  createOllama: vi.fn(() => () => mockModel)
 }))
 
 // Mock credentials

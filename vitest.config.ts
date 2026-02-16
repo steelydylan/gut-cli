@@ -5,6 +5,8 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['src/**/*.test.ts'],
+    // Use workspace-like configuration with different setups
+    // Command tests use global mocks, lib tests don't
     coverage: {
       provider: 'v8',
       reporter: ['text', 'lcov'],

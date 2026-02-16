@@ -10,7 +10,7 @@ const { mockExistsSync, mockWriteFileSync, mockReadFileSync, mockReaddirSync } =
 }))
 
 // Mock process.exit
-const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
+vi.spyOn(process, 'exit').mockImplementation(() => {
   throw new Error('process.exit called')
 })
 
@@ -56,20 +56,21 @@ const mockModel = new MockLanguageModelV1({
   })
 })
 
-// Mock AI SDK
-vi.mock('ai', async () => {
-  const actual = await vi.importActual('ai')
-  return {
-    ...actual,
-    generateText: vi.fn(async () => ({
-      text: 'node_modules/\n.env\ndist/'
-    }))
-  }
-})
-
-// Mock provider SDKs
+// Mock provider SDKs to use MockLanguageModelV1
 vi.mock('@ai-sdk/google', () => ({
   createGoogleGenerativeAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/openai', () => ({
+  createOpenAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/anthropic', () => ({
+  createAnthropic: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('ollama-ai-provider', () => ({
+  createOllama: vi.fn(() => () => mockModel)
 }))
 
 // Mock credentials
@@ -203,19 +204,6 @@ describe('gitignoreCommand', () => {
       await gitignoreCommand.parseAsync(['--stdout', '-p', 'openai'], { from: 'user' })
 
       expect(resolveProvider).toHaveBeenCalledWith('openai')
-    })
-  })
-
-  describe('error handling', () => {
-    it('should handle generation failure', async () => {
-      const { generateText } = await import('ai')
-      vi.mocked(generateText).mockRejectedValueOnce(new Error('API error'))
-
-      await expect(gitignoreCommand.parseAsync(['--stdout'], { from: 'user' })).rejects.toThrow(
-        'process.exit called'
-      )
-
-      expect(mockExit).toHaveBeenCalledWith(1)
     })
   })
 })

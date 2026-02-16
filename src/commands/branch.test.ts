@@ -39,20 +39,21 @@ const mockModel = new MockLanguageModelV1({
   })
 })
 
-// Mock AI SDK
-vi.mock('ai', async () => {
-  const actual = await vi.importActual('ai')
-  return {
-    ...actual,
-    generateText: vi.fn(async () => ({
-      text: 'feature/add-user-auth'
-    }))
-  }
-})
-
-// Mock provider SDKs
+// Mock provider SDKs to use MockLanguageModelV1
 vi.mock('@ai-sdk/google', () => ({
   createGoogleGenerativeAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/openai', () => ({
+  createOpenAI: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('@ai-sdk/anthropic', () => ({
+  createAnthropic: vi.fn(() => () => mockModel)
+}))
+
+vi.mock('ollama-ai-provider', () => ({
+  createOllama: vi.fn(() => () => mockModel)
 }))
 
 // Mock credentials
@@ -135,13 +136,6 @@ describe('branchCommand', () => {
       )
 
       expect(mockExit).toHaveBeenCalledWith(1)
-    })
-
-    it('should handle missing arguments gracefully', async () => {
-      // branchCommand requires issue or -d option
-      // When neither provided, it should call process.exit(1)
-      await branchCommand.parseAsync([], { from: 'user' }).catch(() => {})
-      // Verify exit was called (may or may not throw depending on timing)
     })
   })
 
