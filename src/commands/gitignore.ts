@@ -1,10 +1,10 @@
-import { Command } from 'commander'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { readdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { generateGitignore, findTemplate } from '../lib/ai.js'
+import { findTemplate, generateGitignore } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 // Config files that indicate language/framework
@@ -49,7 +49,7 @@ const CONFIG_FILES = [
   // Dart/Flutter
   'pubspec.yaml',
   // Swift
-  'Package.swift',
+  'Package.swift'
 ]
 
 function getFiles(dir: string, maxDepth: number = 3, currentDepth: number = 0): string[] {
@@ -60,13 +60,15 @@ function getFiles(dir: string, maxDepth: number = 3, currentDepth: number = 0): 
     const entries = readdirSync(dir, { withFileTypes: true })
     for (const entry of entries) {
       // Skip hidden files/dirs and common large directories
-      if (entry.name.startsWith('.') ||
-          entry.name === 'node_modules' ||
-          entry.name === 'vendor' ||
-          entry.name === 'target' ||
-          entry.name === '__pycache__' ||
-          entry.name === 'venv' ||
-          entry.name === '.venv') {
+      if (
+        entry.name.startsWith('.') ||
+        entry.name === 'node_modules' ||
+        entry.name === 'vendor' ||
+        entry.name === 'target' ||
+        entry.name === '__pycache__' ||
+        entry.name === 'venv' ||
+        entry.name === '.venv'
+      ) {
         continue
       }
 
@@ -74,7 +76,7 @@ function getFiles(dir: string, maxDepth: number = 3, currentDepth: number = 0): 
       if (entry.isDirectory()) {
         files.push(`${entry.name}/`)
         const subFiles = getFiles(fullPath, maxDepth, currentDepth + 1)
-        files.push(...subFiles.map(f => `${entry.name}/${f}`))
+        files.push(...subFiles.map((f) => `${entry.name}/${f}`))
       } else {
         files.push(entry.name)
       }
@@ -208,7 +210,6 @@ export const gitignoreCommand = new Command('gitignore')
 
       writeFileSync(gitignorePath, gitignoreContent)
       console.log(chalk.green(`✓ Wrote ${options.output}`))
-
     } catch (error) {
       spinner.fail('Failed to generate .gitignore')
       console.error(chalk.red(error instanceof Error ? error.message : 'Unknown error'))

@@ -1,17 +1,19 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, type TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { aiMocks, createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock AI module
 vi.mock('../lib/ai.js', () => ({
-  generateChangelog: vi.fn(() => Promise.resolve({
-    version: '1.0.0',
-    date: '2024-01-01',
-    sections: [
-      { type: 'Added', items: ['New feature'] },
-      { type: 'Fixed', items: ['Bug fix'] }
-    ],
-    summary: 'Release summary'
-  })),
+  generateChangelog: vi.fn(() =>
+    Promise.resolve({
+      version: '1.0.0',
+      date: '2024-01-01',
+      sections: [
+        { type: 'Added', items: ['New feature'] },
+        { type: 'Fixed', items: ['Bug fix'] }
+      ],
+      summary: 'Release summary'
+    })
+  ),
   findTemplate: vi.fn(aiMocks.findTemplate)
 }))
 
@@ -77,7 +79,7 @@ describe('changelog command - git operations', () => {
       await repo.git.commit('feat: new feature')
 
       const log = await repo.git.log({ maxCount: 2 })
-      const commits = log.all.map(c => ({
+      const commits = log.all.map((c) => ({
         hash: c.hash,
         message: c.message,
         author: c.author_name,
@@ -86,12 +88,15 @@ describe('changelog command - git operations', () => {
 
       const diff = await repo.git.diff(['HEAD~1', 'HEAD'])
 
-      const changelog = await generateChangelog({
-        commits,
-        diff,
-        fromRef: 'HEAD~1',
-        toRef: 'HEAD'
-      }, { provider: 'gemini' })
+      const changelog = await generateChangelog(
+        {
+          commits,
+          diff,
+          fromRef: 'HEAD~1',
+          toRef: 'HEAD'
+        },
+        { provider: 'gemini' }
+      )
 
       expect(changelog.version).toBe('1.0.0')
       expect(changelog.sections).toHaveLength(2)

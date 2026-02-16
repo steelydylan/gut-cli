@@ -1,33 +1,31 @@
-import { Command } from 'commander'
-import chalk from 'chalk'
 import { execSync } from 'node:child_process'
 import { existsSync, mkdirSync } from 'node:fs'
-import { join } from 'node:path'
 import { homedir } from 'node:os'
+import { join } from 'node:path'
+import chalk from 'chalk'
+import { Command } from 'commander'
 import { simpleGit } from 'simple-git'
 import {
+  DEFAULT_MODELS,
+  type GutConfig,
   getConfig,
   getLocalConfig,
+  isValidLanguage,
+  isValidProvider,
   setLanguage,
   setModel,
   setProvider,
-  isValidLanguage,
-  isValidProvider,
   VALID_LANGUAGES,
-  VALID_PROVIDERS,
-  DEFAULT_MODELS,
-  type GutConfig
+  VALID_PROVIDERS
 } from '../lib/config.js'
 
 function openFolder(path: string): void {
   const platform = process.platform
-  const cmd = platform === 'darwin' ? 'open' :
-              platform === 'win32' ? 'start ""' : 'xdg-open'
+  const cmd = platform === 'darwin' ? 'open' : platform === 'win32' ? 'start ""' : 'xdg-open'
   execSync(`${cmd} "${path}"`)
 }
 
-export const configCommand = new Command('config')
-  .description('Manage gut configuration')
+export const configCommand = new Command('config').description('Manage gut configuration')
 
 configCommand
   .command('set <key> <value>')
@@ -53,7 +51,13 @@ configCommand
         setModel(value, options.local ?? false)
         const scope = options.local ? '(local)' : '(global)'
         console.log(chalk.green(`✓ Model set to: ${value} ${scope}`))
-        console.log(chalk.gray(`Default models: ${Object.entries(DEFAULT_MODELS).map(([k, v]) => `${k}=${v}`).join(', ')}`))
+        console.log(
+          chalk.gray(
+            `Default models: ${Object.entries(DEFAULT_MODELS)
+              .map(([k, v]) => `${k}=${v}`)
+              .join(', ')}`
+          )
+        )
       } catch (err) {
         console.error(chalk.red((err as Error).message))
         process.exit(1)

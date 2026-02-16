@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { createTestRepo, type TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { aiMocks, createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock AI module
 vi.mock('../lib/ai.js', () => ({

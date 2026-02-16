@@ -1,16 +1,18 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { readFileSync } from 'node:fs'
-import { createTestRepo, type TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { aiMocks, createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock AI module
 vi.mock('../lib/ai.js', () => ({
-  generateExplanation: vi.fn(() => Promise.resolve({
-    summary: 'This commit adds a new feature',
-    purpose: 'To improve functionality',
-    changes: [{ file: 'feature.ts', description: 'New feature file' }],
-    impact: 'Adds new capability',
-    notes: ['Consider adding tests']
-  })),
+  generateExplanation: vi.fn(() =>
+    Promise.resolve({
+      summary: 'This commit adds a new feature',
+      purpose: 'To improve functionality',
+      changes: [{ file: 'feature.ts', description: 'New feature file' }],
+      impact: 'Adds new capability',
+      notes: ['Consider adding tests']
+    })
+  ),
   findTemplate: vi.fn(aiMocks.findTemplate)
 }))
 
@@ -101,12 +103,15 @@ describe('explain command - git operations', () => {
 
   describe('explanation generation', () => {
     it('should generate explanation for commit', async () => {
-      const explanation = await generateExplanation({
-        type: 'commit',
-        title: 'feat: add feature',
-        diff: 'diff content',
-        metadata: { hash: 'abc123', author: 'test', date: '2024-01-01' }
-      }, { provider: 'gemini' })
+      const explanation = await generateExplanation(
+        {
+          type: 'commit',
+          title: 'feat: add feature',
+          diff: 'diff content',
+          metadata: { hash: 'abc123', author: 'test', date: '2024-01-01' }
+        },
+        { provider: 'gemini' }
+      )
 
       expect(explanation.summary).toContain('feature')
       expect(explanation.changes).toHaveLength(1)

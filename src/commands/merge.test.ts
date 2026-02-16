@@ -1,13 +1,15 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, type TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { aiMocks, createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock AI module
 vi.mock('../lib/ai.js', () => ({
-  resolveConflict: vi.fn(() => Promise.resolve({
-    resolvedContent: 'merged content',
-    explanation: 'Combined both changes',
-    strategy: 'combined'
-  })),
+  resolveConflict: vi.fn(() =>
+    Promise.resolve({
+      resolvedContent: 'merged content',
+      explanation: 'Combined both changes',
+      strategy: 'combined'
+    })
+  ),
   findTemplate: vi.fn(aiMocks.findTemplate)
 }))
 

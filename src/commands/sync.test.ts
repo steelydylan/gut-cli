@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, type TestGitRepo, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock credentials
 vi.mock('../lib/credentials.js', () => ({
@@ -31,7 +31,7 @@ describe('sync command - git operations', () => {
   describe('remote operations', () => {
     it('should list remotes', async () => {
       const remotes = await repo.git.getRemotes(true)
-      expect(remotes.map(r => r.name)).toContain('origin')
+      expect(remotes.map((r) => r.name)).toContain('origin')
     })
 
     it('should check if branch has upstream', async () => {

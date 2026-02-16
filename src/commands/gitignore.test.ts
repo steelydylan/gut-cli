@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Hoisted mocks for fs
 const { mockExistsSync, mockWriteFileSync, mockReadFileSync, mockReaddirSync } = vi.hoisted(() => ({
@@ -183,9 +183,9 @@ describe('gitignoreCommand', () => {
       const { generateText } = await import('ai')
       vi.mocked(generateText).mockRejectedValueOnce(new Error('API error'))
 
-      await expect(
-        gitignoreCommand.parseAsync(['--stdout'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(gitignoreCommand.parseAsync(['--stdout'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })

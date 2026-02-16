@@ -1,11 +1,11 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import {
   getLanguage,
-  setLanguage,
+  getLocalConfig,
   isValidLanguage,
-  VALID_LANGUAGES,
-  getLocalConfig
+  setLanguage,
+  VALID_LANGUAGES
 } from '../lib/config.js'
 
 export const langCommand = new Command('lang')

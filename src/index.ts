@@ -1,29 +1,26 @@
 import { Command } from 'commander'
-import { cleanupCommand } from './commands/cleanup.js'
 import { authCommand } from './commands/auth.js'
-import { commitCommand } from './commands/commit.js'
-import { prCommand } from './commands/pr.js'
-import { reviewCommand } from './commands/review.js'
-import { mergeCommand } from './commands/merge.js'
+import { branchCommand } from './commands/branch.js'
 import { changelogCommand } from './commands/changelog.js'
+import { checkoutCommand } from './commands/checkout.js'
+import { cleanupCommand } from './commands/cleanup.js'
+import { commitCommand } from './commands/commit.js'
+import { configCommand } from './commands/config.js'
 import { explainCommand } from './commands/explain.js'
 import { findCommand } from './commands/find.js'
-import { branchCommand } from './commands/branch.js'
-import { checkoutCommand } from './commands/checkout.js'
-import { syncCommand } from './commands/sync.js'
+import { gitignoreCommand } from './commands/gitignore.js'
+import { initCommand } from './commands/init.js'
+import { langCommand } from './commands/lang.js'
+import { mergeCommand } from './commands/merge.js'
+import { prCommand } from './commands/pr.js'
+import { reviewCommand } from './commands/review.js'
 import { stashCommand } from './commands/stash.js'
 import { summaryCommand } from './commands/summary.js'
-import { configCommand } from './commands/config.js'
-import { langCommand } from './commands/lang.js'
-import { initCommand } from './commands/init.js'
-import { gitignoreCommand } from './commands/gitignore.js'
+import { syncCommand } from './commands/sync.js'
 
 const program = new Command()
 
-program
-  .name('gut')
-  .description('Git Utility Tool - AI-powered git commands')
-  .version('0.1.0')
+program.name('gut').description('Git Utility Tool - AI-powered git commands').version('0.1.0')
 
 // Branch management
 program.addCommand(cleanupCommand)

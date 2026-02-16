@@ -1,16 +1,19 @@
-import { Command } from 'commander'
-import chalk from 'chalk'
-import ora from 'ora'
-import { simpleGit } from 'simple-git'
 import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
-import { generateExplanation, findTemplate } from '../lib/ai.js'
+import chalk from 'chalk'
+import { Command } from 'commander'
+import ora from 'ora'
+import { simpleGit } from 'simple-git'
+import { findTemplate, generateExplanation } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 
 export const explainCommand = new Command('explain')
   .description('Get an AI-powered explanation of changes, commits, PRs, or files')
-  .argument('[target]', 'Commit hash, PR number, PR URL, or file path (default: uncommitted changes)')
+  .argument(
+    '[target]',
+    'Commit hash, PR number, PR URL, or file path (default: uncommitted changes)'
+  )
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('-s, --staged', 'Explain only staged changes')
@@ -55,7 +58,12 @@ export const explainCommand = new Command('explain')
           context = await getPRContext(target, spinner)
         } else if (isFile) {
           if (options.history) {
-            context = await getFileHistoryContext(target, git, spinner, parseInt(options.commits, 10))
+            context = await getFileHistoryContext(
+              target,
+              git,
+              spinner,
+              parseInt(options.commits, 10)
+            )
           } else {
             context = await getFileContentContext(target, spinner)
           }
@@ -121,7 +129,7 @@ async function getUncommittedContext(
 
   const stagedDiff = await git.diff(['--cached'])
   const unstagedDiff = await git.diff()
-  const diff = (`${stagedDiff}\n${unstagedDiff}`).trim()
+  const diff = `${stagedDiff}\n${unstagedDiff}`.trim()
 
   if (!diff) {
     throw new Error('No uncommitted changes to analyze')
@@ -278,7 +286,9 @@ async function getPRContext(
     )
     prInfo = JSON.parse(prJson)
   } catch {
-    throw new Error(`Failed to fetch PR #${prNumber}. Make sure gh CLI is installed and authenticated.`)
+    throw new Error(
+      `Failed to fetch PR #${prNumber}. Make sure gh CLI is installed and authenticated.`
+    )
   }
 
   spinner.text = `Getting diff for PR #${prNumber}...`
@@ -319,7 +329,10 @@ interface Explanation {
   notes?: string[]
 }
 
-function printExplanation(explanation: Explanation, type: 'commit' | 'pr' | 'file-history' | 'file-content' | 'uncommitted' | 'staged') {
+function printExplanation(
+  explanation: Explanation,
+  type: 'commit' | 'pr' | 'file-history' | 'file-content' | 'uncommitted' | 'staged'
+) {
   const icons: Record<string, string> = {
     pr: '🔀',
     'file-content': '📄',

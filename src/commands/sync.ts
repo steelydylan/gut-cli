@@ -1,5 +1,5 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 
@@ -91,7 +91,9 @@ export const syncCommand = new Command('sync')
         }
 
         if (stashed) {
-          console.log(chalk.yellow('\nNote: You have stashed changes. Run `git stash pop` after resolving.'))
+          console.log(
+            chalk.yellow('\nNote: You have stashed changes. Run `git stash pop` after resolving.')
+          )
         }
         process.exit(1)
       }
@@ -133,7 +135,6 @@ export const syncCommand = new Command('sync')
           console.log(chalk.gray('  Run `git stash pop` manually'))
         }
       }
-
     } catch (err) {
       spinner.fail('Sync failed')
       console.error(chalk.red(err instanceof Error ? err.message : 'Unknown error'))

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -102,7 +102,6 @@ describe('configCommand', () => {
     })
 
     describe('provider key', () => {
-
       it('should reject invalid provider', async () => {
         mockIsValidProvider.mockReturnValue(false)
 
@@ -137,9 +136,9 @@ describe('configCommand', () => {
     it('should reject unknown key', async () => {
       mockGetConfig.mockReturnValue({})
 
-      await expect(
-        configCommand.parseAsync(['get', 'unknown'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(configCommand.parseAsync(['get', 'unknown'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
@@ -192,9 +191,9 @@ describe('configCommand', () => {
     it('should fail when --local used outside git repo', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
-      await expect(
-        configCommand.parseAsync(['open', '--local'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(configCommand.parseAsync(['open', '--local'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })

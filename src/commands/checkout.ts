@@ -1,8 +1,8 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { generateBranchNameFromDiff, findTemplate } from '../lib/ai.js'
+import { findTemplate, generateBranchNameFromDiff } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const checkoutCommand = new Command('checkout')
@@ -49,7 +49,7 @@ export const checkoutCommand = new Command('checkout')
     // If only untracked files, add them to context
     if (!diff.trim() && (status.not_added.length > 0 || status.created.length > 0)) {
       const untrackedFiles = [...status.not_added, ...status.created]
-      diff = `New files:\n${untrackedFiles.map(f => `+ ${f}`).join('\n')}`
+      diff = `New files:\n${untrackedFiles.map((f) => `+ ${f}`).join('\n')}`
     }
 
     spinner.text = 'Generating branch name...'

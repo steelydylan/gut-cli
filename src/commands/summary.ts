@@ -1,8 +1,8 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { generateWorkSummary, type WorkSummary, findTemplate } from '../lib/ai.js'
+import { findTemplate, generateWorkSummary, type WorkSummary } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const summaryCommand = new Command('summary')
@@ -35,7 +35,7 @@ export const summaryCommand = new Command('summary')
       let author = options.author
       if (!author) {
         const config = await git.listConfig()
-        author = config.all['user.name'] as string || ''
+        author = (config.all['user.name'] as string) || ''
         if (!author) {
           spinner.fail('Could not determine git user. Use --author to specify.')
           process.exit(1)
@@ -137,7 +137,12 @@ export const summaryCommand = new Command('summary')
     }
   })
 
-function formatMarkdown(summary: WorkSummary, author: string, since: string, until?: string): string {
+function formatMarkdown(
+  summary: WorkSummary,
+  author: string,
+  since: string,
+  until?: string
+): string {
   const lines: string[] = []
   const period = until ? `${since} - ${until}` : `${since} - now`
 

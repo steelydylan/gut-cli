@@ -1,13 +1,16 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { searchCommits, type CommitSearchResult, findTemplate } from '../lib/ai.js'
+import { type CommitSearchResult, findTemplate, searchCommits } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const findCommand = new Command('find')
   .description('Find commits matching a vague description using AI')
-  .argument('<query>', 'Description of the change you are looking for (e.g., "login feature added")')
+  .argument(
+    '<query>',
+    'Description of the change you are looking for (e.g., "login feature added")'
+  )
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('-n, --num <n>', 'Number of commits to search through', '100')
@@ -117,7 +120,11 @@ function printResults(results: CommitSearchResult, query: string) {
 
     if (match.relevance) {
       const relevanceColor =
-        match.relevance === 'high' ? chalk.green : match.relevance === 'medium' ? chalk.yellow : chalk.gray
+        match.relevance === 'high'
+          ? chalk.green
+          : match.relevance === 'medium'
+            ? chalk.yellow
+            : chalk.gray
       console.log(`  ${chalk.gray('Match:')}   ${relevanceColor(match.relevance)}`)
     }
 

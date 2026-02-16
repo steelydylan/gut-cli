@@ -1,11 +1,11 @@
-import { Command } from 'commander'
-import chalk from 'chalk'
-import ora from 'ora'
-import { simpleGit } from 'simple-git'
+import { execSync } from 'node:child_process'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { execSync } from 'node:child_process'
-import { generatePRDescription, findTemplate } from '../lib/ai.js'
+import chalk from 'chalk'
+import { Command } from 'commander'
+import ora from 'ora'
+import { simpleGit } from 'simple-git'
+import { findTemplate, generatePRDescription } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { isGhCliInstalled } from '../lib/gh.js'
 
@@ -29,7 +29,6 @@ function findPRTemplate(repoRoot: string): string | null {
   // Fall back to .gut/pr.md
   return findTemplate(repoRoot, 'pr')
 }
-
 
 export const prCommand = new Command('pr')
   .description('Generate a pull request title and description using AI')

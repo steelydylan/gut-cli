@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock config module
 vi.mock('./config.js', () => ({
@@ -12,8 +12,8 @@ vi.mock('module', () => ({
 
 import { getConfiguredProvider } from './config.js'
 import {
-  getProviderDisplayName,
   getFirstAvailableProvider,
+  getProviderDisplayName,
   resolveProvider
 } from './credentials.js'
 

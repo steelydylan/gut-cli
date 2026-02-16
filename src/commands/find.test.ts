@@ -1,14 +1,24 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, type TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { aiMocks, createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock AI module
 vi.mock('../lib/ai.js', () => ({
-  searchCommits: vi.fn(() => Promise.resolve({
-    matches: [
-      { hash: 'abc1234', message: 'feat: add login', author: 'test', email: 'test@test.com', date: '2024-01-01', reason: 'Matches login query', relevance: 'high' }
-    ],
-    summary: 'Found 1 matching commit'
-  })),
+  searchCommits: vi.fn(() =>
+    Promise.resolve({
+      matches: [
+        {
+          hash: 'abc1234',
+          message: 'feat: add login',
+          author: 'test',
+          email: 'test@test.com',
+          date: '2024-01-01',
+          reason: 'Matches login query',
+          relevance: 'high'
+        }
+      ],
+      summary: 'Found 1 matching commit'
+    })
+  ),
   findTemplate: vi.fn(aiMocks.findTemplate)
 }))
 
@@ -49,7 +59,7 @@ describe('find command - git operations', () => {
     it('should filter by author', async () => {
       const log = await repo.git.log({ '--author': 'Test User' })
       expect(log.all.length).toBeGreaterThan(0)
-      expect(log.all.every(c => c.author_name === 'Test User')).toBe(true)
+      expect(log.all.every((c) => c.author_name === 'Test User')).toBe(true)
     })
 
     it('should filter by date', async () => {
@@ -67,7 +77,7 @@ describe('find command - git operations', () => {
       await repo.git.commit('docs: update readme')
 
       const log = await repo.git.log({ file: 'src/' })
-      const messages = log.all.map(c => c.message)
+      const messages = log.all.map((c) => c.message)
       expect(messages).toContain('feat: add feature in src')
       expect(messages).not.toContain('docs: update readme')
     })
@@ -76,8 +86,20 @@ describe('find command - git operations', () => {
   describe('commit search', () => {
     it('should search commits with AI', async () => {
       const commits = [
-        { hash: 'abc123', message: 'feat: add login', author: 'test', email: 'test@test.com', date: '2024-01-01' },
-        { hash: 'def456', message: 'fix: auth bug', author: 'test', email: 'test@test.com', date: '2024-01-02' }
+        {
+          hash: 'abc123',
+          message: 'feat: add login',
+          author: 'test',
+          email: 'test@test.com',
+          date: '2024-01-01'
+        },
+        {
+          hash: 'def456',
+          message: 'fix: auth bug',
+          author: 'test',
+          email: 'test@test.com',
+          date: '2024-01-02'
+        }
       ]
 
       const result = await searchCommits('login feature', commits, { provider: 'gemini' }, 5)

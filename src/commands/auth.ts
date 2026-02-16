@@ -1,11 +1,11 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import {
-  saveApiKey,
   deleteApiKey,
-  listProviders,
   getProviderDisplayName,
-  type Provider
+  listProviders,
+  type Provider,
+  saveApiKey
 } from '../lib/credentials.js'
 
 const PROVIDERS: Provider[] = ['gemini', 'openai', 'anthropic']
@@ -92,7 +92,9 @@ authCommand
 
     try {
       await saveApiKey(provider, apiKey.trim())
-      console.log(chalk.green(`\n✓ API key for ${getProviderDisplayName(provider)} saved to system keychain`))
+      console.log(
+        chalk.green(`\n✓ API key for ${getProviderDisplayName(provider)} saved to system keychain`)
+      )
     } catch (err) {
       console.error(chalk.red('Failed to save API key'))
       console.error(chalk.gray(err instanceof Error ? err.message : 'Unknown error'))
@@ -139,9 +141,7 @@ authCommand
         console.log(`  ${getProviderDisplayName(provider).padEnd(20)} ${status}`)
       }
 
-      console.log(
-        chalk.gray('\nKeys can also be set via environment variables:')
-      )
+      console.log(chalk.gray('\nKeys can also be set via environment variables:'))
       console.log(chalk.gray('  GUT_GEMINI_API_KEY, GUT_OPENAI_API_KEY, GUT_ANTHROPIC_API_KEY\n'))
     } catch {
       console.error(chalk.red('Failed to check status'))

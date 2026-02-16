@@ -1,9 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-
-// Mock process.exit
-const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
-  throw new Error('process.exit called')
-})
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock console methods
 vi.spyOn(console, 'log').mockImplementation(() => {})
@@ -131,7 +126,7 @@ describe('initCommand', () => {
 
       // Should log skipped messages
       const skippedCalls = consoleSpy.mock.calls.filter(
-        call => typeof call[0] === 'string' && call[0].includes('Skipped')
+        (call) => typeof call[0] === 'string' && call[0].includes('Skipped')
       )
       expect(skippedCalls.length).toBeGreaterThan(0)
     })
@@ -154,7 +149,6 @@ describe('initCommand', () => {
   })
 
   describe('error handling', () => {
-
     it('should succeed with --global even outside git repo', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 

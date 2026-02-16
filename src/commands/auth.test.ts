@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -50,7 +50,9 @@ describe('authCommand', () => {
 
   describe('login subcommand', () => {
     it('should save API key when provided via --key flag', async () => {
-      await authCommand.parseAsync(['login', '-p', 'gemini', '-k', 'test-api-key'], { from: 'user' })
+      await authCommand.parseAsync(['login', '-p', 'gemini', '-k', 'test-api-key'], {
+        from: 'user'
+      })
 
       expect(mockSaveApiKey).toHaveBeenCalledWith('gemini', 'test-api-key')
     })
@@ -129,9 +131,9 @@ describe('authCommand', () => {
     it('should handle status check failure', async () => {
       mockListProviders.mockRejectedValue(new Error('Check failed'))
 
-      await expect(
-        authCommand.parseAsync(['status'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(authCommand.parseAsync(['status'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })

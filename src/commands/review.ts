@@ -1,9 +1,9 @@
-import { Command } from 'commander'
+import { execSync } from 'node:child_process'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { execSync } from 'node:child_process'
-import { generateCodeReview, type CodeReview, findTemplate } from '../lib/ai.js'
+import { type CodeReview, findTemplate, generateCodeReview } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 
@@ -16,8 +16,13 @@ interface PRInfo {
 
 async function getPRDiff(prNumber: string): Promise<{ diff: string; prInfo: PRInfo }> {
   try {
-    const diff = execSync(`gh pr diff ${prNumber}`, { encoding: 'utf-8', maxBuffer: 10 * 1024 * 1024 })
-    const prJsonStr = execSync(`gh pr view ${prNumber} --json number,title,author,url`, { encoding: 'utf-8' })
+    const diff = execSync(`gh pr diff ${prNumber}`, {
+      encoding: 'utf-8',
+      maxBuffer: 10 * 1024 * 1024
+    })
+    const prJsonStr = execSync(`gh pr view ${prNumber} --json number,title,author,url`, {
+      encoding: 'utf-8'
+    })
     const prJson = JSON.parse(prJsonStr)
     return {
       diff,
@@ -30,7 +35,9 @@ async function getPRDiff(prNumber: string): Promise<{ diff: string; prInfo: PRIn
     }
   } catch (err) {
     if (err instanceof Error && err.message.includes('gh: command not found')) {
-      throw new Error('GitHub CLI (gh) is not installed. Install it from https://cli.github.com/', { cause: err })
+      throw new Error('GitHub CLI (gh) is not installed. Install it from https://cli.github.com/', {
+        cause: err
+      })
     }
     throw err
   }

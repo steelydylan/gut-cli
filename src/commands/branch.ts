@@ -1,9 +1,9 @@
-import { Command } from 'commander'
+import { execSync } from 'node:child_process'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { execSync } from 'node:child_process'
-import { generateBranchName, findTemplate } from '../lib/ai.js'
+import { findTemplate, generateBranchName } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 

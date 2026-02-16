@@ -1,7 +1,7 @@
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
 import { tmpdir } from 'node:os'
-import { simpleGit, type SimpleGit } from 'simple-git'
+import { join } from 'node:path'
+import { type SimpleGit, simpleGit } from 'simple-git'
 
 export interface TestGitRepo {
   dir: string
@@ -68,11 +68,12 @@ export const aiMocks = {
   generateBranchNameFromDiff: () => Promise.resolve('feature/from-diff'),
   generateStashName: () => Promise.resolve('WIP: test changes'),
   generatePRDescription: () => Promise.resolve({ title: 'Test PR', body: 'Test body' }),
-  generateCodeReview: () => Promise.resolve({
-    summary: 'Good code',
-    issues: [],
-    positives: ['Clean code']
-  }),
+  generateCodeReview: () =>
+    Promise.resolve({
+      summary: 'Good code',
+      issues: [],
+      positives: ['Clean code']
+    }),
   findTemplate: () => null
 }
 

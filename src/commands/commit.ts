@@ -1,8 +1,8 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { generateCommitMessage, findTemplate } from '../lib/ai.js'
+import { findTemplate, generateCommitMessage } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const commitCommand = new Command('commit')
@@ -68,7 +68,14 @@ export const commitCommand = new Command('commit')
       console.log(chalk.green(`  ${message.split('\n')[0]}`))
       if (message.includes('\n')) {
         const details = message.split('\n').slice(1).join('\n')
-        console.log(chalk.gray(details.split('\n').map(l => `  ${l}`).join('\n')))
+        console.log(
+          chalk.gray(
+            details
+              .split('\n')
+              .map((l) => `  ${l}`)
+              .join('\n')
+          )
+        )
       }
       console.log()
 

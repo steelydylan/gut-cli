@@ -1,8 +1,8 @@
-import { Command } from 'commander'
 import chalk from 'chalk'
+import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { generateStashName, findTemplate } from '../lib/ai.js'
+import { findTemplate, generateStashName } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const stashCommand = new Command('stash')
@@ -46,7 +46,11 @@ export const stashCommand = new Command('stash')
         await git.stash(['apply', `stash@{${index}}`])
         console.log(chalk.green(`✓ Applied stash@{${index}}`))
       } catch (err) {
-        console.error(chalk.red(`Failed to apply stash: ${err instanceof Error ? err.message : 'Unknown error'}`))
+        console.error(
+          chalk.red(
+            `Failed to apply stash: ${err instanceof Error ? err.message : 'Unknown error'}`
+          )
+        )
         process.exit(1)
       }
       return
@@ -59,7 +63,9 @@ export const stashCommand = new Command('stash')
         await git.stash(['pop', `stash@{${index}}`])
         console.log(chalk.green(`✓ Popped stash@{${index}}`))
       } catch (err) {
-        console.error(chalk.red(`Failed to pop stash: ${err instanceof Error ? err.message : 'Unknown error'}`))
+        console.error(
+          chalk.red(`Failed to pop stash: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        )
         process.exit(1)
       }
       return
@@ -72,7 +78,9 @@ export const stashCommand = new Command('stash')
         await git.stash(['drop', `stash@{${index}}`])
         console.log(chalk.green(`✓ Dropped stash@{${index}}`))
       } catch (err) {
-        console.error(chalk.red(`Failed to drop stash: ${err instanceof Error ? err.message : 'Unknown error'}`))
+        console.error(
+          chalk.red(`Failed to drop stash: ${err instanceof Error ? err.message : 'Unknown error'}`)
+        )
         process.exit(1)
       }
       return
@@ -127,7 +135,11 @@ export const stashCommand = new Command('stash')
         try {
           const repoRoot = await git.revparse(['--show-toplevel']).catch(() => process.cwd())
           const template = findTemplate(repoRoot.trim(), 'stash')
-          stashName = await generateStashName(fullDiff, { provider, model: options.model }, template || undefined)
+          stashName = await generateStashName(
+            fullDiff,
+            { provider, model: options.model },
+            template || undefined
+          )
           spinner.stop()
         } catch {
           spinner.fail('Failed to generate name, using default')

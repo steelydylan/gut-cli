@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -96,7 +96,7 @@ describe('reviewCommand', () => {
     it('should review all uncommitted changes by default', async () => {
       mockGit.diff
         .mockResolvedValueOnce('unstaged diff') // First call: unstaged
-        .mockResolvedValueOnce('staged diff')   // Second call: staged
+        .mockResolvedValueOnce('staged diff') // Second call: staged
 
       await reviewCommand.parseAsync([], { from: 'user' })
 
@@ -133,8 +133,8 @@ describe('reviewCommand', () => {
 
       // Check that JSON.stringify was used (contains "summary")
       const calls = consoleSpy.mock.calls
-      const jsonCall = calls.find(call =>
-        typeof call[0] === 'string' && call[0].includes('summary')
+      const jsonCall = calls.find(
+        (call) => typeof call[0] === 'string' && call[0].includes('summary')
       )
       expect(jsonCall).toBeDefined()
     })
@@ -144,9 +144,9 @@ describe('reviewCommand', () => {
     it('should exit when not in a git repository', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
-      await expect(
-        reviewCommand.parseAsync([], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(reviewCommand.parseAsync([], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
@@ -154,9 +154,9 @@ describe('reviewCommand', () => {
     it('should handle no changes to review', async () => {
       mockGit.diff.mockResolvedValue('')
 
-      await expect(
-        reviewCommand.parseAsync([], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(reviewCommand.parseAsync([], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(0)
     })

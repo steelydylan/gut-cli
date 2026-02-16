@@ -1,15 +1,15 @@
-import { generateText, generateObject } from 'ai'
+import { existsSync, readFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
-import { createAnthropic } from '@ai-sdk/anthropic'
+import { generateObject, generateText } from 'ai'
 import { createOllama } from 'ollama-ai-provider'
 import { z } from 'zod'
-import { existsSync, readFileSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { homedir } from 'node:os'
-import { fileURLToPath } from 'node:url'
+import { getConfiguredModel, getDefaultModel, type Language } from './config.js'
 import { getApiKey, type Provider } from './credentials.js'
-import { type Language, getConfiguredModel, getDefaultModel } from './config.js'
 
 export type { Language }
 
@@ -127,14 +127,11 @@ function buildPrompt(
   const template = userTemplate || loadTemplate(templateName)
 
   // Build language instruction
-  const langInstruction = language === 'ja'
-    ? '\n\nIMPORTANT: Respond in Japanese (日本語で回答してください).'
-    : ''
+  const langInstruction =
+    language === 'ja' ? '\n\nIMPORTANT: Respond in Japanese (日本語で回答してください).' : ''
 
   // Build output format section (auto-injected, not user-editable)
-  const outputSection = outputFormat
-    ? `\n\n<output-format>\n${outputFormat}\n</output-format>`
-    : ''
+  const outputSection = outputFormat ? `\n\n<output-format>\n${outputFormat}\n</output-format>` : ''
 
   return `${contextXml}<instructions>\n${template}${langInstruction}\n</instructions>${outputSection}`
 }
@@ -191,9 +188,15 @@ export async function generateCommitMessage(
 ): Promise<string> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'commit', {
-    diff: diff.slice(0, 8000)
-  }, options.language, 'Respond with ONLY the commit message, nothing else.')
+  const prompt = buildPrompt(
+    template,
+    'commit',
+    {
+      diff: diff.slice(0, 8000)
+    },
+    options.language,
+    'Respond with ONLY the commit message, nothing else.'
+  )
 
   const result = await generateText({
     model,
@@ -216,18 +219,24 @@ export async function generatePRDescription(
 ): Promise<{ title: string; body: string }> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'pr', {
-    baseBranch: context.baseBranch,
-    currentBranch: context.currentBranch,
-    commits: context.commits.map((c) => `- ${c}`).join('\n'),
-    diff: context.diff.slice(0, 6000)
-  }, options.language, `Respond in JSON format:
+  const prompt = buildPrompt(
+    template,
+    'pr',
+    {
+      baseBranch: context.baseBranch,
+      currentBranch: context.currentBranch,
+      commits: context.commits.map((c) => `- ${c}`).join('\n'),
+      diff: context.diff.slice(0, 6000)
+    },
+    options.language,
+    `Respond in JSON format:
 \`\`\`json
 {
   "title": "...",
   "body": "..."
 }
-\`\`\``)
+\`\`\``
+  )
 
   const result = await generateText({
     model,
@@ -269,9 +278,14 @@ export async function generateCodeReview(
 ): Promise<CodeReview> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'review', {
-    diff: diff.slice(0, 10000)
-  }, options.language)
+  const prompt = buildPrompt(
+    template,
+    'review',
+    {
+      diff: diff.slice(0, 10000)
+    },
+    options.language
+  )
 
   const result = await generateObject({
     model,
@@ -312,13 +326,18 @@ export async function generateChangelog(
     .map((c) => `- ${c.hash.slice(0, 7)} ${c.message} (${c.author})`)
     .join('\n')
 
-  const prompt = buildPrompt(template, 'changelog', {
-    fromRef: context.fromRef,
-    toRef: context.toRef,
-    commits: commitList,
-    diff: context.diff.slice(0, 8000),
-    todayDate: new Date().toISOString().split('T')[0]
-  }, options.language)
+  const prompt = buildPrompt(
+    template,
+    'changelog',
+    {
+      fromRef: context.fromRef,
+      toRef: context.toRef,
+      commits: commitList,
+      diff: context.diff.slice(0, 8000),
+      todayDate: new Date().toISOString().split('T')[0]
+    },
+    options.language
+  )
 
   const result = await generateObject({
     model,
@@ -376,10 +395,15 @@ export async function generateExplanation(
 
   // Handle file content explanation
   if (context.type === 'file-content') {
-    const prompt = buildPrompt(template, 'explain-file', {
-      filePath: context.metadata.filePath || '',
-      content: context.content?.slice(0, 15000) || ''
-    }, options.language)
+    const prompt = buildPrompt(
+      template,
+      'explain-file',
+      {
+        filePath: context.metadata.filePath || '',
+        content: context.content?.slice(0, 15000) || ''
+      },
+      options.language
+    )
 
     const result = await generateObject({
       model,
@@ -408,7 +432,10 @@ Latest author: ${context.metadata.author}
 Latest date: ${context.metadata.date}`
     targetType = 'file changes'
   } else if (context.type === 'uncommitted' || context.type === 'staged') {
-    contextInfo = context.type === 'staged' ? 'Staged changes (ready to commit)' : 'Uncommitted changes (work in progress)'
+    contextInfo =
+      context.type === 'staged'
+        ? 'Staged changes (ready to commit)'
+        : 'Uncommitted changes (work in progress)'
     targetType = context.type === 'staged' ? 'staged changes' : 'uncommitted changes'
   } else {
     contextInfo = `Commit: ${context.metadata.hash?.slice(0, 7)}
@@ -418,11 +445,16 @@ Date: ${context.metadata.date}`
     targetType = 'commit'
   }
 
-  const prompt = buildPrompt(template, 'explain', {
-    targetType,
-    contextInfo,
-    diff: context.diff?.slice(0, 12000) || ''
-  }, options.language)
+  const prompt = buildPrompt(
+    template,
+    'explain',
+    {
+      targetType,
+      contextInfo,
+      diff: context.diff?.slice(0, 12000) || ''
+    },
+    options.language
+  )
 
   const result = await generateObject({
     model,
@@ -472,14 +504,22 @@ export async function searchCommits(
   const model = await getModel(options)
 
   const commitList = commits
-    .map((c) => `${c.hash.slice(0, 7)} | ${c.author} | ${c.date.split('T')[0]} | ${c.message.split('\n')[0]}`)
+    .map(
+      (c) =>
+        `${c.hash.slice(0, 7)} | ${c.author} | ${c.date.split('T')[0]} | ${c.message.split('\n')[0]}`
+    )
     .join('\n')
 
-  const prompt = buildPrompt(template, 'find', {
-    query,
-    commits: commitList,
-    maxResults: String(maxResults)
-  }, options.language)
+  const prompt = buildPrompt(
+    template,
+    'find',
+    {
+      query,
+      commits: commitList,
+      maxResults: String(maxResults)
+    },
+    options.language
+  )
 
   const result = await generateObject({
     model,
@@ -488,22 +528,25 @@ export async function searchCommits(
   })
 
   // Enrich results with full commit data and assign relevance based on position
-  const enrichedMatches = result.object.matches.map((match, index) => {
-    const commit = commits.find((c) => c.hash.startsWith(match.hash))
-    if (!commit) {
-      return null
-    }
-    const relevance: 'high' | 'medium' | 'low' = index === 0 ? 'high' : index < 3 ? 'medium' : 'low'
-    return {
-      hash: commit.hash,
-      message: commit.message,
-      author: commit.author,
-      email: commit.email,
-      date: commit.date,
-      reason: match.reason,
-      relevance
-    }
-  }).filter((m): m is NonNullable<typeof m> => m !== null)
+  const enrichedMatches = result.object.matches
+    .map((match, index) => {
+      const commit = commits.find((c) => c.hash.startsWith(match.hash))
+      if (!commit) {
+        return null
+      }
+      const relevance: 'high' | 'medium' | 'low' =
+        index === 0 ? 'high' : index < 3 ? 'medium' : 'low'
+      return {
+        hash: commit.hash,
+        message: commit.message,
+        author: commit.author,
+        email: commit.email,
+        date: commit.date,
+        reason: match.reason,
+        relevance
+      }
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null)
 
   return {
     matches: enrichedMatches,
@@ -522,11 +565,17 @@ export async function generateBranchName(
 ): Promise<string> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'branch', {
-    description,
-    type: context?.type,
-    issue: context?.issue
-  }, options.language, 'Respond with ONLY the branch name, nothing else.')
+  const prompt = buildPrompt(
+    template,
+    'branch',
+    {
+      description,
+      type: context?.type,
+      issue: context?.issue
+    },
+    options.language,
+    'Respond with ONLY the branch name, nothing else.'
+  )
 
   const result = await generateText({
     model,
@@ -544,9 +593,15 @@ export async function generateBranchNameFromDiff(
 ): Promise<string> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'checkout', {
-    diff: diff.slice(0, 8000)
-  }, options.language, 'Respond with ONLY the branch name, nothing else.')
+  const prompt = buildPrompt(
+    template,
+    'checkout',
+    {
+      diff: diff.slice(0, 8000)
+    },
+    options.language,
+    'Respond with ONLY the branch name, nothing else.'
+  )
 
   const result = await generateText({
     model,
@@ -564,9 +619,15 @@ export async function generateStashName(
 ): Promise<string> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'stash', {
-    diff: diff.slice(0, 4000)
-  }, options.language, 'Respond with ONLY the stash name, nothing else.')
+  const prompt = buildPrompt(
+    template,
+    'stash',
+    {
+      diff: diff.slice(0, 4000)
+    },
+    options.language,
+    'Respond with ONLY the stash name, nothing else.'
+  )
 
   const result = await generateText({
     model,
@@ -587,12 +648,14 @@ const WorkSummarySchema = z.object({
       items: z.array(z.string()).describe('List of items in this category')
     })
   ),
-  stats: z.object({
-    commits: z.number(),
-    filesChanged: z.number().optional(),
-    additions: z.number().optional(),
-    deletions: z.number().optional()
-  }).optional()
+  stats: z
+    .object({
+      commits: z.number(),
+      filesChanged: z.number().optional(),
+      additions: z.number().optional(),
+      deletions: z.number().optional()
+    })
+    .optional()
 })
 
 export type WorkSummary = z.infer<typeof WorkSummarySchema>
@@ -615,21 +678,27 @@ export async function generateWorkSummary(
     .map((c) => `- ${c.hash.slice(0, 7)} ${c.message.split('\n')[0]} (${c.date.split('T')[0]})`)
     .join('\n')
 
-  const formatHint = format === 'daily'
-    ? 'This is a daily report. Focus on today\'s accomplishments.'
-    : format === 'weekly'
-    ? 'This is a weekly report. Summarize the week\'s work at a higher level.'
-    : `This is a summary from ${context.since}${context.until ? ` to ${context.until}` : ''}.`
+  const formatHint =
+    format === 'daily'
+      ? "This is a daily report. Focus on today's accomplishments."
+      : format === 'weekly'
+        ? "This is a weekly report. Summarize the week's work at a higher level."
+        : `This is a summary from ${context.since}${context.until ? ` to ${context.until}` : ''}.`
 
   const period = `${context.since}${context.until ? ` to ${context.until}` : ' to now'}`
 
-  const prompt = buildPrompt(template, 'summary', {
-    author: context.author,
-    period,
-    format: formatHint,
-    commits: commitList,
-    diff: context.diff?.slice(0, 6000)
-  }, options.language)
+  const prompt = buildPrompt(
+    template,
+    'summary',
+    {
+      author: context.author,
+      period,
+      format: formatHint,
+      commits: commitList,
+      diff: context.diff?.slice(0, 6000)
+    },
+    options.language
+  )
 
   const result = await generateObject({
     model,
@@ -658,12 +727,17 @@ export async function resolveConflict(
 ): Promise<ConflictResolution> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'merge', {
-    filename: context.filename,
-    oursRef: context.oursRef,
-    theirsRef: context.theirsRef,
-    content: conflictedContent
-  }, options.language)
+  const prompt = buildPrompt(
+    template,
+    'merge',
+    {
+      filename: context.filename,
+      oursRef: context.oursRef,
+      theirsRef: context.theirsRef,
+      content: conflictedContent
+    },
+    options.language
+  )
 
   const result = await generateObject({
     model,
@@ -685,11 +759,17 @@ export async function generateGitignore(
 ): Promise<string> {
   const model = await getModel(options)
 
-  const prompt = buildPrompt(template, 'gitignore', {
-    files: context.files,
-    configFiles: context.configFiles,
-    existingGitignore: context.existingGitignore
-  }, options.language, 'Respond with ONLY the .gitignore content, nothing else. No explanations or markdown code blocks.')
+  const prompt = buildPrompt(
+    template,
+    'gitignore',
+    {
+      files: context.files,
+      configFiles: context.configFiles,
+      existingGitignore: context.existingGitignore
+    },
+    options.language,
+    'Respond with ONLY the .gitignore content, nothing else. No explanations or markdown code blocks.'
+  )
 
   const result = await generateText({
     model,

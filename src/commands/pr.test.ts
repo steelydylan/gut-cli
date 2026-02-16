@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -34,7 +34,6 @@ vi.mock('node:readline', () => ({
 vi.mock('node:child_process', () => ({
   execSync: vi.fn()
 }))
-
 
 // Create mock model
 const mockModel = new MockLanguageModelV1({
@@ -86,16 +85,20 @@ vi.mock('../lib/gh.js', () => ({
 const mockGit = {
   checkIsRepo: vi.fn(() => Promise.resolve(true)),
   revparse: vi.fn(() => Promise.resolve('/test/repo')),
-  branch: vi.fn(() => Promise.resolve({
-    current: 'feature/new-feature',
-    all: ['main', 'feature/new-feature']
-  })),
-  log: vi.fn(() => Promise.resolve({
-    all: [
-      { message: 'feat: add feature X', hash: 'abc123' },
-      { message: 'fix: fix bug Y', hash: 'def456' }
-    ]
-  })),
+  branch: vi.fn(() =>
+    Promise.resolve({
+      current: 'feature/new-feature',
+      all: ['main', 'feature/new-feature']
+    })
+  ),
+  log: vi.fn(() =>
+    Promise.resolve({
+      all: [
+        { message: 'feat: add feature X', hash: 'abc123' },
+        { message: 'fix: fix bug Y', hash: 'def456' }
+      ]
+    })
+  ),
   diff: vi.fn(() => Promise.resolve('diff content'))
 }
 
@@ -115,9 +118,7 @@ describe('prCommand', () => {
       all: ['main', 'feature/new-feature']
     })
     mockGit.log.mockResolvedValue({
-      all: [
-        { message: 'feat: add feature X', hash: 'abc123' }
-      ]
+      all: [{ message: 'feat: add feature X', hash: 'abc123' }]
     })
     mockGit.diff.mockResolvedValue('diff content')
   })
@@ -143,7 +144,6 @@ describe('prCommand', () => {
 
       expect(mockGit.log).toHaveBeenCalledWith({ from: 'develop', to: 'feature/new-feature' })
     })
-
   })
 
   describe('clipboard support', () => {
@@ -160,20 +160,19 @@ describe('prCommand', () => {
     it('should exit when not in a git repository', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
-      await expect(
-        prCommand.parseAsync([], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(prCommand.parseAsync([], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
 
-
     it('should exit when no commits found', async () => {
       mockGit.log.mockResolvedValue({ all: [] })
 
-      await expect(
-        prCommand.parseAsync([], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(prCommand.parseAsync([], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
@@ -196,7 +195,7 @@ describe('prCommand', () => {
       await prCommand.parseAsync([], { from: 'user' })
 
       const warningCall = consoleSpy.mock.calls.find(
-        call => typeof call[0] === 'string' && call[0].includes('gh')
+        (call) => typeof call[0] === 'string' && call[0].includes('gh')
       )
       expect(warningCall).toBeDefined()
     })

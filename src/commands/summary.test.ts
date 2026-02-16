@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -78,15 +78,19 @@ vi.mock('../lib/config.js', () => ({
 const mockGit = {
   checkIsRepo: vi.fn(() => Promise.resolve(true)),
   revparse: vi.fn(() => Promise.resolve('/test/repo')),
-  listConfig: vi.fn(() => Promise.resolve({
-    all: { 'user.name': 'Test User' }
-  })),
-  log: vi.fn(() => Promise.resolve({
-    all: [
-      { hash: 'abc123', message: 'feat: add feature', date: '2024-01-15' },
-      { hash: 'def456', message: 'fix: bug fix', date: '2024-01-15' }
-    ]
-  })),
+  listConfig: vi.fn(() =>
+    Promise.resolve({
+      all: { 'user.name': 'Test User' }
+    })
+  ),
+  log: vi.fn(() =>
+    Promise.resolve({
+      all: [
+        { hash: 'abc123', message: 'feat: add feature', date: '2024-01-15' },
+        { hash: 'def456', message: 'fix: bug fix', date: '2024-01-15' }
+      ]
+    })
+  ),
   diff: vi.fn(() => Promise.resolve('diff content'))
 }
 
@@ -105,9 +109,7 @@ describe('summaryCommand', () => {
       all: { 'user.name': 'Test User' }
     })
     mockGit.log.mockResolvedValue({
-      all: [
-        { hash: 'abc123', message: 'feat: add feature', date: '2024-01-15' }
-      ]
+      all: [{ hash: 'abc123', message: 'feat: add feature', date: '2024-01-15' }]
     })
   })
 
@@ -157,7 +159,7 @@ describe('summaryCommand', () => {
       await summaryCommand.parseAsync(['--json'], { from: 'user' })
 
       const jsonCall = consoleSpy.mock.calls.find(
-        call => typeof call[0] === 'string' && call[0].includes('{')
+        (call) => typeof call[0] === 'string' && call[0].includes('{')
       )
       expect(jsonCall).toBeDefined()
     })
@@ -169,7 +171,6 @@ describe('summaryCommand', () => {
 
       expect(consoleSpy).toHaveBeenCalled()
     })
-
   })
 
   describe('diff analysis', () => {
@@ -184,13 +185,12 @@ describe('summaryCommand', () => {
     it('should exit when not in a git repository', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
-      await expect(
-        summaryCommand.parseAsync([], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(summaryCommand.parseAsync([], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
-
   })
 
   describe('provider selection', () => {

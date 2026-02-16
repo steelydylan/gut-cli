@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, type TestGitRepo, credentialsMocks } from '../test/setup.js'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { createTestRepo, credentialsMocks, type TestGitRepo } from '../test/setup.js'
 
 // Mock credentials
 vi.mock('../lib/credentials.js', () => ({
@@ -68,9 +68,7 @@ describe('cleanup command - git operations', () => {
       await repo.git.checkout('main')
 
       // Should fail without force
-      await expect(
-        repo.git.deleteLocalBranch('feature/unmerged')
-      ).rejects.toThrow()
+      await expect(repo.git.deleteLocalBranch('feature/unmerged')).rejects.toThrow()
     })
 
     it('should force delete unmerged branch', async () => {

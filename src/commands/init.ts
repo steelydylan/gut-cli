@@ -1,23 +1,22 @@
-import { Command } from 'commander'
-import chalk from 'chalk'
-import ora from 'ora'
-import { simpleGit } from 'simple-git'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { join, dirname } from 'node:path'
-import { homedir } from 'node:os'
-import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
-import { generateText } from 'ai'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createAnthropic } from '@ai-sdk/anthropic'
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
 import { createOpenAI } from '@ai-sdk/openai'
-import { createAnthropic } from '@ai-sdk/anthropic'
-import { getApiKey, resolveProvider, type Provider } from '../lib/credentials.js'
-import { getLanguage, getDefaultModel } from '../lib/config.js'
+import { generateText } from 'ai'
+import chalk from 'chalk'
+import { Command } from 'commander'
+import ora from 'ora'
+import { simpleGit } from 'simple-git'
+import { getDefaultModel, getLanguage } from '../lib/config.js'
+import { getApiKey, type Provider, resolveProvider } from '../lib/credentials.js'
 
 function openFolder(path: string): void {
   const platform = process.platform
-  const cmd = platform === 'darwin' ? 'open' :
-              platform === 'win32' ? 'start ""' : 'xdg-open'
+  const cmd = platform === 'darwin' ? 'open' : platform === 'win32' ? 'start ""' : 'xdg-open'
   execSync(`${cmd} "${path}"`)
 }
 
@@ -104,7 +103,10 @@ Translated template:`
 
 export const initCommand = new Command('init')
   .description('Initialize .gut/ templates in your project or globally')
-  .option('-p, --provider <provider>', 'AI provider for translation (gemini, openai, anthropic, ollama)')
+  .option(
+    '-p, --provider <provider>',
+    'AI provider for translation (gemini, openai, anthropic, ollama)'
+  )
   .option('-f, --force', 'Overwrite existing templates')
   .option('-g, --global', 'Initialize templates globally (~/.config/gut/templates/)')
   .option('-o, --open', 'Open the templates folder (can be used alone)')
@@ -137,7 +139,11 @@ export const initCommand = new Command('init')
       console.log(chalk.green(`Created ${targetDir}`))
     }
 
-    console.log(chalk.blue(isGlobal ? 'Initializing global templates...\n' : 'Initializing project templates...\n'))
+    console.log(
+      chalk.blue(
+        isGlobal ? 'Initializing global templates...\n' : 'Initializing project templates...\n'
+      )
+    )
 
     const sourceDir = join(GUT_ROOT, '.gut')
     const lang = getLanguage()
@@ -161,7 +167,8 @@ export const initCommand = new Command('init')
       // Try language-specific template first, then fall back to default
       const langSourcePath = join(langSourceDir, filename)
       const defaultSourcePath = join(sourceDir, filename)
-      const sourcePath = hasPreTranslated && existsSync(langSourcePath) ? langSourcePath : defaultSourcePath
+      const sourcePath =
+        hasPreTranslated && existsSync(langSourcePath) ? langSourcePath : defaultSourcePath
       const targetPath = join(targetDir, filename)
 
       if (!existsSync(sourcePath)) {
@@ -207,7 +214,9 @@ export const initCommand = new Command('init')
 
     if (isGlobal) {
       console.log(chalk.gray('\nGlobal templates will be used as fallback for all projects.'))
-      console.log(chalk.gray('Project-level templates (.gut/) take priority over global templates.'))
+      console.log(
+        chalk.gray('Project-level templates (.gut/) take priority over global templates.')
+      )
     } else {
       console.log(chalk.gray('\nYou can now customize these templates for your project.'))
     }

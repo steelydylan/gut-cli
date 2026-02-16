@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit to prevent test from exiting
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -66,12 +66,14 @@ const mockGit = {
   revparse: vi.fn(() => Promise.resolve('/test/repo')),
   add: vi.fn(() => Promise.resolve()),
   diff: vi.fn(() => Promise.resolve('diff content')),
-  status: vi.fn(() => Promise.resolve({
-    staged: ['file.ts'],
-    modified: [],
-    not_added: [],
-    created: []
-  })),
+  status: vi.fn(() =>
+    Promise.resolve({
+      staged: ['file.ts'],
+      modified: [],
+      not_added: [],
+      created: []
+    })
+  ),
   commit: vi.fn(() => Promise.resolve())
 }
 
@@ -150,9 +152,9 @@ describe('commitCommand', () => {
     it('should exit when not in a git repository', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
-      await expect(
-        commitCommand.parseAsync(['--commit'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(commitCommand.parseAsync(['--commit'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
@@ -166,12 +168,11 @@ describe('commitCommand', () => {
         created: []
       })
 
-      await expect(
-        commitCommand.parseAsync(['--commit'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(commitCommand.parseAsync(['--commit'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
   })
 })
-

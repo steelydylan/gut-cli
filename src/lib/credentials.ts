@@ -134,7 +134,7 @@ export async function resolveProvider(cliProvider?: string): Promise<Provider> {
   const configProvider = getConfiguredProvider()
   if (configProvider) {
     // Verify the configured provider has an API key (unless it's ollama)
-    if (configProvider === 'ollama' || await getApiKey(configProvider)) {
+    if (configProvider === 'ollama' || (await getApiKey(configProvider))) {
       return configProvider
     }
   }

@@ -1,11 +1,11 @@
-import { Command } from 'commander'
-import chalk from 'chalk'
-import ora from 'ora'
-import { simpleGit } from 'simple-git'
-import { resolveConflict, findTemplate } from '../lib/ai.js'
-import { resolveProvider } from '../lib/credentials.js'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
+import chalk from 'chalk'
+import { Command } from 'commander'
+import ora from 'ora'
+import { simpleGit } from 'simple-git'
+import { findTemplate, resolveConflict } from '../lib/ai.js'
+import { resolveProvider } from '../lib/credentials.js'
 
 export const mergeCommand = new Command('merge')
   .description('Merge a branch with AI-powered conflict resolution')
@@ -35,7 +35,9 @@ export const mergeCommand = new Command('merge')
     const branchInfo = await git.branch()
     const currentBranch = branchInfo.current
 
-    console.log(chalk.bold(`\nMerging ${chalk.cyan(branch)} into ${chalk.cyan(currentBranch)}...\n`))
+    console.log(
+      chalk.bold(`\nMerging ${chalk.cyan(branch)} into ${chalk.cyan(currentBranch)}...\n`)
+    )
 
     // Attempt merge
     try {
@@ -85,11 +87,16 @@ export const mergeCommand = new Command('merge')
       spinner.start('AI is analyzing conflict...')
 
       try {
-        const resolution = await resolveConflict(content, {
-          filename: file,
-          oursRef: currentBranch,
-          theirsRef: branch
-        }, { provider, model: options.model }, template || undefined)
+        const resolution = await resolveConflict(
+          content,
+          {
+            filename: file,
+            oursRef: currentBranch,
+            theirsRef: branch
+          },
+          { provider, model: options.model },
+          template || undefined
+        )
 
         spinner.stop()
 

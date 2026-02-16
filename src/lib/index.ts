@@ -2,29 +2,27 @@
 // These can be imported by other packages like gitton
 
 export {
-  generateCommitMessage,
-  generatePRDescription,
-  generateCodeReview,
-  generateChangelog,
-  generateExplanation,
-  searchCommits,
+  type AIOptions,
+  type Changelog,
+  type CodeReview,
+  type CommitSearchResult,
+  type ConflictResolution,
+  type Explanation,
+  findTemplate,
   generateBranchName,
   generateBranchNameFromDiff,
+  generateChangelog,
+  generateCodeReview,
+  generateCommitMessage,
+  generateExplanation,
+  generateGitignore,
+  generatePRDescription,
   generateStashName,
   generateWorkSummary,
+  type Language,
   resolveConflict,
-  generateGitignore,
-  findTemplate,
-  type AIOptions,
-  type CodeReview,
-  type Changelog,
-  type Explanation,
-  type CommitSearchResult,
-  type WorkSummary,
-  type ConflictResolution,
-  type Language
+  searchCommits,
+  type WorkSummary
 } from './ai.js'
-
-export { getApiKey, saveApiKey, deleteApiKey, listProviders, type Provider } from './credentials.js'
-
-export { getLanguage, setLanguage, getLanguageInstruction } from './config.js'
+export { getLanguage, getLanguageInstruction, setLanguage } from './config.js'
+export { deleteApiKey, getApiKey, listProviders, type Provider, saveApiKey } from './credentials.js'

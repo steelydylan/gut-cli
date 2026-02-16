@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -74,9 +74,9 @@ describe('langCommand', () => {
     it('should reject invalid language', async () => {
       mockIsValidLanguage.mockReturnValue(false)
 
-      await expect(
-        langCommand.parseAsync(['invalid'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(langCommand.parseAsync(['invalid'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
@@ -86,12 +86,11 @@ describe('langCommand', () => {
         throw new Error('Write error')
       })
 
-      await expect(
-        langCommand.parseAsync(['ja'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(langCommand.parseAsync(['ja'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
   })
-
 })

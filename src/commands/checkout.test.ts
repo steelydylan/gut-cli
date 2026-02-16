@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { MockLanguageModelV1 } from 'ai/test'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock process.exit
 const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
@@ -73,12 +73,14 @@ const mockGit = {
   checkIsRepo: vi.fn(() => Promise.resolve(true)),
   revparse: vi.fn(() => Promise.resolve('/test/repo')),
   diff: vi.fn(() => Promise.resolve('diff content')),
-  status: vi.fn(() => Promise.resolve({
-    staged: [],
-    modified: ['file.ts'],
-    not_added: [],
-    created: []
-  })),
+  status: vi.fn(() =>
+    Promise.resolve({
+      staged: [],
+      modified: ['file.ts'],
+      not_added: [],
+      created: []
+    })
+  ),
   checkoutLocalBranch: vi.fn(() => Promise.resolve())
 }
 
@@ -121,7 +123,6 @@ describe('checkoutCommand', () => {
 
       expect(mockGit.diff).toHaveBeenCalledWith(['--cached'])
     })
-
   })
 
   describe('untracked files handling', () => {
@@ -144,9 +145,9 @@ describe('checkoutCommand', () => {
     it('should exit when not in a git repository', async () => {
       mockGit.checkIsRepo.mockResolvedValue(false)
 
-      await expect(
-        checkoutCommand.parseAsync(['--yes'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(checkoutCommand.parseAsync(['--yes'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })
@@ -160,9 +161,9 @@ describe('checkoutCommand', () => {
         created: []
       })
 
-      await expect(
-        checkoutCommand.parseAsync(['--yes'], { from: 'user' })
-      ).rejects.toThrow('process.exit called')
+      await expect(checkoutCommand.parseAsync(['--yes'], { from: 'user' })).rejects.toThrow(
+        'process.exit called'
+      )
 
       expect(mockExit).toHaveBeenCalledWith(1)
     })

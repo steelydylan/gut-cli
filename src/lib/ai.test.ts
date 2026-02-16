@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, } from 'vitest'
-import { MockLanguageModelV1 } from 'ai/test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { MockLanguageModelV1 } from 'ai/test'
+import { describe, expect, it, vi } from 'vitest'
 
 // Mock credentials
 vi.mock('./credentials.js', () => ({
@@ -94,20 +94,20 @@ vi.mock('ollama-ai-provider', () => ({
 
 // Import actual functions to test
 import {
-  findTemplate,
   findGlobalTemplate,
-  generateCommitMessage,
-  generatePRDescription,
-  generateCodeReview,
-  generateChangelog,
-  generateExplanation,
-  searchCommits,
+  findTemplate,
   generateBranchName,
   generateBranchNameFromDiff,
+  generateChangelog,
+  generateCodeReview,
+  generateCommitMessage,
+  generateExplanation,
+  generateGitignore,
+  generatePRDescription,
   generateStashName,
   generateWorkSummary,
   resolveConflict,
-  generateGitignore
+  searchCommits
 } from './ai.js'
 
 describe('findTemplate', () => {
@@ -269,8 +269,20 @@ describe('generateExplanation', () => {
 describe('searchCommits', () => {
   it('should search commits and return matches', async () => {
     const commits = [
-      { hash: 'abc1234567890', message: 'feat: add login', author: 'test', email: 'test@test.com', date: '2024-01-01' },
-      { hash: 'def4567890123', message: 'fix: auth bug', author: 'test', email: 'test@test.com', date: '2024-01-02' }
+      {
+        hash: 'abc1234567890',
+        message: 'feat: add login',
+        author: 'test',
+        email: 'test@test.com',
+        date: '2024-01-01'
+      },
+      {
+        hash: 'def4567890123',
+        message: 'fix: auth bug',
+        author: 'test',
+        email: 'test@test.com',
+        date: '2024-01-02'
+      }
     ]
 
     const result = await searchCommits('login feature', commits, { provider: 'gemini' })
@@ -426,7 +438,7 @@ describe('template content', () => {
   ]
 
   describe('English templates', () => {
-    templateFiles.forEach(file => {
+    templateFiles.forEach((file) => {
       it(`should have ${file} template`, () => {
         const templatePath = join(templatesDir, file)
         expect(existsSync(templatePath)).toBe(true)
@@ -438,7 +450,7 @@ describe('template content', () => {
   })
 
   describe('Japanese templates', () => {
-    templateFiles.forEach(file => {
+    templateFiles.forEach((file) => {
       it(`should have ${file} Japanese template`, () => {
         const templatePath = join(jaTemplatesDir, file)
         expect(existsSync(templatePath)).toBe(true)
@@ -450,7 +462,7 @@ describe('template content', () => {
   })
 
   describe('template consistency', () => {
-    templateFiles.forEach(file => {
+    templateFiles.forEach((file) => {
       it(`English and Japanese ${file} should have similar structure`, () => {
         const enPath = join(templatesDir, file)
         const jaPath = join(jaTemplatesDir, file)
