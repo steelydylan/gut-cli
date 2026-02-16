@@ -1,7 +1,7 @@
-import { homedir } from 'os'
-import { join } from 'path'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs'
-import { execSync } from 'child_process'
+import { homedir } from 'node:os'
+import { join } from 'node:path'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 
 export type Language = 'en' | 'ja'
 export type Provider = 'gemini' | 'openai' | 'anthropic' | 'ollama'
@@ -119,7 +119,6 @@ export function getLanguageInstruction(lang: Language): string {
   switch (lang) {
     case 'ja':
       return '\n\nIMPORTANT: Respond in Japanese (日本語で回答してください).'
-    case 'en':
     default:
       return ''
   }
@@ -144,7 +143,7 @@ export function setModel(model: string, local: boolean = false): void {
 }
 
 export function getDefaultModel(provider: string): string {
-  return DEFAULT_MODELS[provider] || DEFAULT_MODELS['gemini']
+  return DEFAULT_MODELS[provider] || DEFAULT_MODELS.gemini
 }
 
 export const VALID_PROVIDERS: Provider[] = ['gemini', 'openai', 'anthropic', 'ollama']

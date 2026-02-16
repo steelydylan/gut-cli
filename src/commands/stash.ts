@@ -80,7 +80,7 @@ export const stashCommand = new Command('stash')
 
     // Clear all stashes
     if (options.clear) {
-      const readline = await import('readline')
+      const readline = await import('node:readline')
       const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -117,7 +117,7 @@ export const stashCommand = new Command('stash')
       const provider = await resolveProvider(options.provider)
       const diff = await git.diff()
       const stagedDiff = await git.diff(['--cached'])
-      const fullDiff = diff + '\n' + stagedDiff
+      const fullDiff = `${diff}\n${stagedDiff}`
 
       if (!fullDiff.trim()) {
         // Only untracked files

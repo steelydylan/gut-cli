@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { searchCommits, CommitSearchResult, findTemplate } from '../lib/ai.js'
+import { searchCommits, type CommitSearchResult, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const findCommand = new Command('find')

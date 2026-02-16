@@ -33,5 +33,6 @@
 ### Build & Test
 ```bash
 npm run build   # Build with tsup
-npm run lint    # Run ESLint
+npm run lint    # Run Biome lint
+npm run check   # Run Biome lint + format check
 ```

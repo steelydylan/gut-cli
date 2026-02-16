@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'fs'
-import { join } from 'path'
-import { tmpdir } from 'os'
+import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
 
 // Mock the config module's internal functions
 vi.mock('os', async () => {
@@ -19,21 +19,13 @@ vi.mock('child_process', () => ({
 import {
   getConfig,
   getGlobalConfig,
-  getLocalConfig,
   setGlobalConfig,
-  setLocalConfig,
-  getLanguage,
-  setLanguage,
   isValidLanguage,
   VALID_LANGUAGES,
   DEFAULT_MODELS,
   getDefaultModel,
-  getConfiguredModel,
-  setModel,
   VALID_PROVIDERS,
   isValidProvider,
-  getConfiguredProvider,
-  setProvider
 } from './config.js'
 
 describe('config', () => {

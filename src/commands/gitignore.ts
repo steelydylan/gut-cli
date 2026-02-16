@@ -2,8 +2,8 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { readdirSync, readFileSync, existsSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { readdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { generateGitignore, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
@@ -72,9 +72,9 @@ function getFiles(dir: string, maxDepth: number = 3, currentDepth: number = 0): 
 
       const fullPath = join(dir, entry.name)
       if (entry.isDirectory()) {
-        files.push(entry.name + '/')
+        files.push(`${entry.name}/`)
         const subFiles = getFiles(fullPath, maxDepth, currentDepth + 1)
-        files.push(...subFiles.map(f => entry.name + '/' + f))
+        files.push(...subFiles.map(f => `${entry.name}/${f}`))
       } else {
         files.push(entry.name)
       }
@@ -189,7 +189,7 @@ export const gitignoreCommand = new Command('gitignore')
 
       // Check if file exists and confirm overwrite
       if (existsSync(gitignorePath) && !options.yes) {
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout

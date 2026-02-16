@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { createTestRepo, type TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
 
 // Mock AI module
 vi.mock('../lib/ai.js', () => ({

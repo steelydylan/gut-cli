@@ -1,4 +1,4 @@
-import { createRequire } from 'module'
+import { createRequire } from 'node:module'
 import { getConfiguredProvider } from './config.js'
 
 const SERVICE_NAME = 'gut-cli'

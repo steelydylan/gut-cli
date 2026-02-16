@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { execSync } from 'child_process'
+import { execSync } from 'node:child_process'
 import { generateBranchName, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
@@ -98,7 +98,7 @@ export const branchCommand = new Command('branch')
         await git.checkoutLocalBranch(branchName)
         console.log(chalk.green(`✓ Created and checked out branch: ${branchName}`))
       } else {
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout

@@ -78,7 +78,7 @@ export const commitCommand = new Command('commit')
         console.log(chalk.green('✓ Committed successfully'))
       } else {
         // Ask for confirmation
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout
@@ -95,13 +95,13 @@ export const commitCommand = new Command('commit')
         } else if (answer.toLowerCase() === 'e') {
           // Open in editor
           console.log(chalk.gray('Opening editor...'))
-          const { execSync } = await import('child_process')
+          const { execSync } = await import('node:child_process')
           const editor = process.env.EDITOR || process.env.VISUAL || 'vi'
 
           // Write message to temp file
-          const fs = await import('fs')
-          const os = await import('os')
-          const path = await import('path')
+          const fs = await import('node:fs')
+          const os = await import('node:os')
+          const path = await import('node:path')
           const tmpFile = path.join(os.tmpdir(), 'gut-commit-msg.txt')
           fs.writeFileSync(tmpFile, message)
 

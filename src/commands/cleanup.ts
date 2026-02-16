@@ -65,7 +65,7 @@ export const cleanupCommand = new Command('cleanup')
       }
 
       if (!options.force) {
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout

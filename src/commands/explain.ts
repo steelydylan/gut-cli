@@ -2,8 +2,8 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { execSync } from 'child_process'
-import { existsSync, readFileSync } from 'fs'
+import { execSync } from 'node:child_process'
+import { existsSync, readFileSync } from 'node:fs'
 import { generateExplanation, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
@@ -121,7 +121,7 @@ async function getUncommittedContext(
 
   const stagedDiff = await git.diff(['--cached'])
   const unstagedDiff = await git.diff()
-  const diff = (stagedDiff + '\n' + unstagedDiff).trim()
+  const diff = (`${stagedDiff}\n${unstagedDiff}`).trim()
 
   if (!diff) {
     throw new Error('No uncommitted changes to analyze')

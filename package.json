@@ -24,9 +24,11 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src",
-    "lint:fix": "eslint src --fix",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint src --write",
+    "format": "biome format src --write",
+    "check": "biome check src",
+    "check:fix": "biome check src --write",
     "clean": "rm -rf dist",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -77,16 +79,11 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
+    "@biomejs/biome": "^2.4.0",
     "@types/node": "^22.10.0",
-    "@typescript-eslint/eslint-plugin": "^7.0.0",
-    "@typescript-eslint/parser": "^7.0.0",
     "@vitest/coverage-v8": "^4.0.18",
-    "eslint": "^9.39.2",
-    "prettier": "^3.4.0",
     "tsup": "^8.3.0",
     "typescript": "^5.7.0",
-    "typescript-eslint": "^8.55.0",
     "vitest": "^4.0.18"
   }
 }

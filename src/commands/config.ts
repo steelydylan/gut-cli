@@ -1,9 +1,9 @@
 import { Command } from 'commander'
 import chalk from 'chalk'
-import { execSync } from 'child_process'
-import { existsSync, mkdirSync } from 'fs'
-import { join } from 'path'
-import { homedir } from 'os'
+import { execSync } from 'node:child_process'
+import { existsSync, mkdirSync } from 'node:fs'
+import { join } from 'node:path'
+import { homedir } from 'node:os'
 import { simpleGit } from 'simple-git'
 import {
   getConfig,

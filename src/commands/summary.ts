@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { generateWorkSummary, WorkSummary, findTemplate } from '../lib/ai.js'
+import { generateWorkSummary, type WorkSummary, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const summaryCommand = new Command('summary')
@@ -115,7 +115,7 @@ export const summaryCommand = new Command('summary')
 
       if (options.copy) {
         const textToCopy = output || formatMarkdown(summary, author, since, options.until)
-        const { execSync } = await import('child_process')
+        const { execSync } = await import('node:child_process')
         try {
           execSync('pbcopy', { input: textToCopy })
           console.log(chalk.green('Summary copied to clipboard!'))

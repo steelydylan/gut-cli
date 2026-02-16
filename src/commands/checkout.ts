@@ -34,7 +34,7 @@ export const checkoutCommand = new Command('checkout')
       // Get both staged and unstaged changes
       const stagedDiff = await git.diff(['--cached'])
       const unstagedDiff = await git.diff()
-      diff = stagedDiff + '\n' + unstagedDiff
+      diff = `${stagedDiff}\n${unstagedDiff}`
     }
 
     // Check if there are any changes (including untracked files)
@@ -78,7 +78,7 @@ export const checkoutCommand = new Command('checkout')
         await git.checkoutLocalBranch(branchName)
         console.log(chalk.green(`✓ Created and checked out branch: ${branchName}`))
       } else {
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout

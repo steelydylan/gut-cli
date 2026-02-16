@@ -1,7 +1,7 @@
-import { mkdirSync, rmSync, writeFileSync } from 'fs'
-import { join } from 'path'
-import { tmpdir } from 'os'
-import { simpleGit, SimpleGit } from 'simple-git'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { tmpdir } from 'node:os'
+import { simpleGit, type SimpleGit } from 'simple-git'
 
 export interface TestGitRepo {
   dir: string

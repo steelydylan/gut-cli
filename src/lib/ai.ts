@@ -4,11 +4,11 @@ import { createOpenAI } from '@ai-sdk/openai'
 import { createAnthropic } from '@ai-sdk/anthropic'
 import { createOllama } from 'ollama-ai-provider'
 import { z } from 'zod'
-import { existsSync, readFileSync } from 'fs'
-import { join, dirname } from 'path'
-import { homedir } from 'os'
-import { fileURLToPath } from 'url'
-import { getApiKey, Provider } from './credentials.js'
+import { existsSync, readFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { homedir } from 'node:os'
+import { fileURLToPath } from 'node:url'
+import { getApiKey, type Provider } from './credentials.js'
 import { type Language, getConfiguredModel, getDefaultModel } from './config.js'
 
 export type { Language }
@@ -136,7 +136,7 @@ function buildPrompt(
     ? `\n\n<output-format>\n${outputFormat}\n</output-format>`
     : ''
 
-  return contextXml + '<instructions>\n' + template + langInstruction + '\n</instructions>' + outputSection
+  return `${contextXml}<instructions>\n${template}${langInstruction}\n</instructions>${outputSection}`
 }
 
 async function getModel(options: AIOptions) {

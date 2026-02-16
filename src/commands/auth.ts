@@ -5,7 +5,7 @@ import {
   deleteApiKey,
   listProviders,
   getProviderDisplayName,
-  Provider
+  type Provider
 } from '../lib/credentials.js'
 
 const PROVIDERS: Provider[] = ['gemini', 'openai', 'anthropic']

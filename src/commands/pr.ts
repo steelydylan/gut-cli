@@ -2,9 +2,9 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { existsSync, readFileSync } from 'fs'
-import { join } from 'path'
-import { execSync } from 'child_process'
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { execSync } from 'node:child_process'
 import { generatePRDescription, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { isGhCliInstalled } from '../lib/gh.js'
@@ -141,7 +141,7 @@ export const prCommand = new Command('pr')
         }
       } else {
         // Always ask about creating PR
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout

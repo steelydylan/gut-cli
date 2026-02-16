@@ -2,8 +2,8 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { execSync } from 'child_process'
-import { generateCodeReview, CodeReview, findTemplate } from '../lib/ai.js'
+import { execSync } from 'node:child_process'
+import { generateCodeReview, type CodeReview, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 
@@ -85,7 +85,7 @@ export const reviewCommand = new Command('review')
         // Review all uncommitted changes
         diff = await git.diff()
         const stagedDiff = await git.diff(['--cached'])
-        diff = stagedDiff + '\n' + diff
+        diff = `${stagedDiff}\n${diff}`
         spinner.text = 'Reviewing uncommitted changes...'
       }
 

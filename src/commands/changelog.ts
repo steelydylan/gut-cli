@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import chalk from 'chalk'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
-import { generateChangelog, Changelog, findTemplate } from '../lib/ai.js'
+import { generateChangelog, type Changelog, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 function formatChangelog(changelog: Changelog): string {

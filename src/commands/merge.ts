@@ -4,8 +4,8 @@ import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { resolveConflict, findTemplate } from '../lib/ai.js'
 import { resolveProvider } from '../lib/credentials.js'
-import * as fs from 'fs'
-import * as path from 'path'
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 
 export const mergeCommand = new Command('merge')
   .description('Merge a branch with AI-powered conflict resolution')
@@ -103,7 +103,7 @@ export const mergeCommand = new Command('merge')
         console.log(chalk.gray(`Reason: ${resolution.explanation}`))
 
         // Ask for confirmation
-        const readline = await import('readline')
+        const readline = await import('node:readline')
         const rl = readline.createInterface({
           input: process.stdin,
           output: process.stdout

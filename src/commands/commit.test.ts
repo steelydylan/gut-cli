@@ -1,126 +1,177 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { createTestRepo, TestGitRepo, aiMocks, credentialsMocks } from '../test/setup.js'
+import { MockLanguageModelV1 } from 'ai/test'
 
-// Mock AI module
-vi.mock('../lib/ai.js', () => ({
-  generateCommitMessage: vi.fn(aiMocks.generateCommitMessage),
-  findTemplate: vi.fn(aiMocks.findTemplate)
+// Mock process.exit to prevent test from exiting
+const mockExit = vi.spyOn(process, 'exit').mockImplementation(() => {
+  throw new Error('process.exit called')
+})
+
+// Mock console methods
+const _mockConsoleLog = vi.spyOn(console, 'log').mockImplementation(() => {})
+const _mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+
+// Mock ora spinner
+vi.mock('ora', () => ({
+  default: vi.fn(() => ({
+    start: vi.fn().mockReturnThis(),
+    stop: vi.fn().mockReturnThis(),
+    fail: vi.fn().mockReturnThis(),
+    info: vi.fn().mockReturnThis(),
+    text: ''
+  }))
+}))
+
+// Create mock model
+const mockModel = new MockLanguageModelV1({
+  doGenerate: async () => ({
+    rawCall: { rawPrompt: null, rawSettings: {} },
+    finishReason: 'stop' as const,
+    usage: { promptTokens: 10, completionTokens: 20 },
+    text: 'feat(test): add new feature'
+  })
+})
+
+// Mock AI SDK
+vi.mock('ai', async () => {
+  const actual = await vi.importActual('ai')
+  return {
+    ...actual,
+    generateText: vi.fn(async () => ({
+      text: 'feat(test): add new feature'
+    }))
+  }
+})
+
+// Mock provider SDKs
+vi.mock('@ai-sdk/google', () => ({
+  createGoogleGenerativeAI: vi.fn(() => () => mockModel)
 }))
 
 // Mock credentials
 vi.mock('../lib/credentials.js', () => ({
-  resolveProvider: vi.fn(credentialsMocks.resolveProvider),
-  getApiKey: vi.fn(credentialsMocks.getApiKey)
+  resolveProvider: vi.fn(() => Promise.resolve('gemini')),
+  getApiKey: vi.fn(() => 'test-api-key'),
+  Provider: {}
 }))
 
-import { generateCommitMessage } from '../lib/ai.js'
+// Mock config
+vi.mock('../lib/config.js', () => ({
+  getConfiguredModel: vi.fn(() => undefined),
+  getDefaultModel: vi.fn(() => 'gemini-2.5-flash')
+}))
 
-describe('commit command - git operations', () => {
-  let repo: TestGitRepo
+// Mock simple-git
+const mockGit = {
+  checkIsRepo: vi.fn(() => Promise.resolve(true)),
+  revparse: vi.fn(() => Promise.resolve('/test/repo')),
+  add: vi.fn(() => Promise.resolve()),
+  diff: vi.fn(() => Promise.resolve('diff content')),
+  status: vi.fn(() => Promise.resolve({
+    staged: ['file.ts'],
+    modified: [],
+    not_added: [],
+    created: []
+  })),
+  commit: vi.fn(() => Promise.resolve())
+}
 
-  beforeEach(async () => {
-    repo = await createTestRepo('commit')
+vi.mock('simple-git', () => ({
+  simpleGit: vi.fn(() => mockGit)
+}))
+
+// Import the command after mocks are set up
+import { commitCommand } from './commit.js'
+
+describe('commitCommand', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    // Reset mock implementations
+    mockGit.checkIsRepo.mockResolvedValue(true)
+    mockGit.diff.mockResolvedValue('diff --git a/file.ts\n+new content')
+    mockGit.status.mockResolvedValue({
+      staged: ['file.ts'],
+      modified: [],
+      not_added: [],
+      created: []
+    })
   })
 
   afterEach(() => {
-    repo.cleanup()
     vi.clearAllMocks()
   })
 
-  describe('staged changes detection', () => {
-    it('should detect staged changes', async () => {
-      repo.writeFile('new-file.ts', 'export const hello = "world";\n')
-      await repo.git.add('new-file.ts')
+  describe('with --commit flag', () => {
+    it('should generate and commit message automatically', async () => {
+      await commitCommand.parseAsync(['--commit'], { from: 'user' })
 
-      const status = await repo.git.status()
-      expect(status.staged).toContain('new-file.ts')
+      expect(mockGit.diff).toHaveBeenCalledWith(['--cached'])
+      expect(mockGit.commit).toHaveBeenCalledWith('feat(test): add new feature')
     })
 
-    it('should detect modified files', async () => {
-      repo.writeFile('README.md', '# Test Project\n\nUpdated content.\n')
+    it('should use specified provider', async () => {
+      const { resolveProvider } = await import('../lib/credentials.js')
 
-      const status = await repo.git.status()
-      expect(status.modified).toContain('README.md')
-    })
+      await commitCommand.parseAsync(['--commit', '-p', 'openai'], { from: 'user' })
 
-    it('should get diff of staged changes', async () => {
-      repo.writeFile('feature.ts', 'export function feature() { return true; }\n')
-      await repo.git.add('feature.ts')
-
-      const diff = await repo.git.diff(['--cached'])
-      expect(diff).toContain('feature.ts')
-      expect(diff).toContain('export function feature')
+      expect(resolveProvider).toHaveBeenCalledWith('openai')
     })
   })
 
-  describe('commit message generation flow', () => {
-    it('should call generateCommitMessage with diff', async () => {
-      repo.writeFile('utils.ts', 'export const utils = {};\n')
-      await repo.git.add('utils.ts')
+  describe('with --all flag', () => {
+    it('should stage all changes before generating', async () => {
+      await commitCommand.parseAsync(['--commit', '--all'], { from: 'user' })
 
-      const diff = await repo.git.diff(['--cached'])
-      expect(diff.length).toBeGreaterThan(0)
-
-      const message = await generateCommitMessage(diff, { provider: 'gemini' })
-      expect(message).toBe('feat(test): add new feature')
-      expect(generateCommitMessage).toHaveBeenCalledWith(diff, { provider: 'gemini' })
+      expect(mockGit.add).toHaveBeenCalledWith('-A')
     })
   })
 
   describe('auto-staging behavior', () => {
     it('should auto-stage when nothing is staged', async () => {
-      repo.writeFile('unstaged.ts', 'const x = 1;\n')
+      mockGit.diff
+        .mockResolvedValueOnce('') // First call: --cached returns empty
+        .mockResolvedValueOnce('unstaged diff') // Second call: unstaged diff
+        .mockResolvedValueOnce('staged diff after auto-stage') // Third call: after staging
 
-      let status = await repo.git.status()
-      expect(status.staged).toHaveLength(0)
-      expect(status.not_added).toContain('unstaged.ts')
+      mockGit.status.mockResolvedValue({
+        staged: [],
+        modified: ['file.ts'],
+        not_added: [],
+        created: []
+      })
 
-      await repo.git.add('-A')
+      await commitCommand.parseAsync(['--commit'], { from: 'user' })
 
-      status = await repo.git.status()
-      expect(status.staged).toContain('unstaged.ts')
+      // Should call add('-A') to auto-stage
+      expect(mockGit.add).toHaveBeenCalledWith('-A')
     })
   })
 
-  describe('commit execution', () => {
-    it('should create a commit with generated message', async () => {
-      repo.writeFile('committed.ts', 'export const committed = true;\n')
-      await repo.git.add('committed.ts')
+  describe('error handling', () => {
+    it('should exit when not in a git repository', async () => {
+      mockGit.checkIsRepo.mockResolvedValue(false)
 
-      const commitMessage = 'feat(test): add committed file'
-      await repo.git.commit(commitMessage)
+      await expect(
+        commitCommand.parseAsync(['--commit'], { from: 'user' })
+      ).rejects.toThrow('process.exit called')
 
-      const log = await repo.git.log({ maxCount: 1 })
-      expect(log.latest?.message).toBe(commitMessage)
+      expect(mockExit).toHaveBeenCalledWith(1)
     })
 
-    it('should include all staged files in commit', async () => {
-      repo.writeFile('file1.ts', 'export const a = 1;\n')
-      repo.writeFile('file2.ts', 'export const b = 2;\n')
-      repo.writeFile('file3.ts', 'export const c = 3;\n')
+    it('should exit when no changes to commit', async () => {
+      mockGit.diff.mockResolvedValue('')
+      mockGit.status.mockResolvedValue({
+        staged: [],
+        modified: [],
+        not_added: [],
+        created: []
+      })
 
-      await repo.git.add(['file1.ts', 'file2.ts', 'file3.ts'])
-      await repo.git.commit('feat: add multiple files')
+      await expect(
+        commitCommand.parseAsync(['--commit'], { from: 'user' })
+      ).rejects.toThrow('process.exit called')
 
-      const status = await repo.git.status()
-      expect(status.staged).toHaveLength(0)
-      expect(status.isClean()).toBe(true)
-    })
-
-    it('should preserve commit history', async () => {
-      // Make multiple commits
-      repo.writeFile('v1.ts', 'v1\n')
-      await repo.git.add('v1.ts')
-      await repo.git.commit('feat: version 1')
-
-      repo.writeFile('v2.ts', 'v2\n')
-      await repo.git.add('v2.ts')
-      await repo.git.commit('feat: version 2')
-
-      const log = await repo.git.log({ maxCount: 3 })
-      expect(log.all.length).toBe(3) // Including initial commit
-      expect(log.all[0].message).toBe('feat: version 2')
-      expect(log.all[1].message).toBe('feat: version 1')
+      expect(mockExit).toHaveBeenCalledWith(1)
     })
   })
 })
+
