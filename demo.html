@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>gut-cli Demo</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    .terminal-container {
+      width: 100%;
+      max-width: 900px;
+    }
+
+    .terminal {
+      background: #0d1117;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+    }
+
+    .terminal-header {
+      background: #21262d;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-btn {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+
+    .terminal-btn.close { background: #ff5f56; }
+    .terminal-btn.minimize { background: #ffbd2e; }
+    .terminal-btn.maximize { background: #27c93f; }
+
+    .terminal-title {
+      color: #8b949e;
+      font-size: 13px;
+      margin-left: 8px;
+      flex: 1;
+    }
+
+    .scenario-badge {
+      background: #238636;
+      color: white;
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 12px;
+      display: none;
+    }
+
+    .terminal-body {
+      padding: 20px;
+      min-height: 450px;
+      max-height: 500px;
+      overflow-y: auto;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', monospace;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #c9d1d9;
+    }
+
+    .terminal-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .terminal-body::-webkit-scrollbar-track {
+      background: #161b22;
+    }
+
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: #30363d;
+      border-radius: 4px;
+    }
+
+    .line {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .prompt {
+      color: #7ee787;
+    }
+
+    .command {
+      color: #f0f6fc;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 17px;
+      background: #58a6ff;
+      animation: blink 1s step-end infinite;
+      vertical-align: text-bottom;
+      margin-left: 2px;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .gray { color: #8b949e; }
+    .green { color: #7ee787; }
+    .cyan { color: #79c0ff; }
+    .yellow { color: #e3b341; }
+    .red { color: #f85149; }
+    .purple { color: #d2a8ff; }
+    .bold { font-weight: 600; }
+    .white { color: #f0f6fc; }
+
+    .spinner {
+      display: inline-block;
+    }
+
+    .spinner::before {
+      content: '⠋';
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { content: '⠋'; }
+      12.5% { content: '⠙'; }
+      25% { content: '⠹'; }
+      37.5% { content: '⠸'; }
+      50% { content: '⠼'; }
+      62.5% { content: '⠴'; }
+      75% { content: '⠦'; }
+      87.5% { content: '⠧'; }
+    }
+
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: #238636;
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn:hover {
+      background: #2ea043;
+      transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+      background: #21262d;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn.secondary {
+      background: #30363d;
+    }
+
+    .btn.secondary:hover {
+      background: #484f58;
+    }
+
+    .demo-info {
+      text-align: center;
+      color: #8b949e;
+      margin-bottom: 24px;
+    }
+
+    .demo-info h1 {
+      color: #f0f6fc;
+      font-size: 32px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .demo-info p {
+      font-size: 15px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+
+    .scenario-selector {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 16px;
+    }
+
+    .scenario-btn {
+      background: #21262d;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .scenario-btn:hover {
+      background: #30363d;
+      border-color: #484f58;
+    }
+
+    .scenario-btn.active {
+      background: #238636;
+      border-color: #238636;
+      color: white;
+    }
+
+    .progress-bar {
+      height: 3px;
+      background: #21262d;
+      margin-top: 16px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #238636, #7ee787);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      color: #8b949e;
+      font-size: 13px;
+    }
+
+    .footer a {
+      color: #58a6ff;
+      text-decoration: none;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="terminal-container">
+    <div class="demo-info">
+      <h1>gut-cli</h1>
+      <p>AI-powered git commands for smarter workflows. No subscription — just bring your own API key.</p>
+    </div>
+
+    <div class="terminal">
+      <div class="terminal-header">
+        <div class="terminal-btn close"></div>
+        <div class="terminal-btn minimize"></div>
+        <div class="terminal-btn maximize"></div>
+        <span class="terminal-title">gut-cli demo — zsh</span>
+        <span class="scenario-badge" id="scenarioBadge"></span>
+      </div>
+      <div class="terminal-body" id="terminal"></div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="scenario-selector" id="scenarioSelector"></div>
+
+    <div class="controls">
+      <button class="btn" id="playBtn" onclick="startDemo()">Play All Demos</button>
+      <button class="btn secondary" id="resetBtn" onclick="resetDemo()">Reset</button>
+    </div>
+
+    <div class="footer">
+      <p>Install: <code>npm install -g gut-cli</code> | <a href="https://github.com/user/gut" target="_blank">GitHub</a></p>
+    </div>
+  </div>
+
+  <script>
+    const terminal = document.getElementById('terminal');
+    const playBtn = document.getElementById('playBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const progressFill = document.getElementById('progressFill');
+    const scenarioBadge = document.getElementById('scenarioBadge');
+    const scenarioSelector = document.getElementById('scenarioSelector');
+
+    let isRunning = false;
+    let currentLineEl = null;
+
+    // Demo scenarios - showcasing key features
+    const scenarios = [
+      {
+        name: 'gut commit',
+        description: 'AI-generated commit messages',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut commit', delay: 60 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'output', html: '<span class="gray">No staged changes, staging all changes...</span>' },
+          { type: 'spinner', text: 'Generating commit message...', duration: 1800 },
+          { type: 'output', html: '\n<span class="bold">Generated commit message:</span>\n' },
+          { type: 'output', html: '  <span class="green">feat(auth): add secure API key storage using system keychain</span>' },
+          { type: 'output', html: '  <span class="gray"></span>' },
+          { type: 'output', html: '  <span class="gray">- Implement keytar integration for macOS Keychain</span>' },
+          { type: 'output', html: '  <span class="gray">- Add fallback to environment variables</span>' },
+          { type: 'output', html: '  <span class="gray">- Support for Gemini, OpenAI, and Anthropic providers</span>\n' },
+          { type: 'question', text: 'Commit with this message? (y/N/e to edit) ' },
+          { type: 'wait', ms: 600 },
+          { type: 'answer', text: 'y' },
+          { type: 'output', html: '<span class="green">✓ Committed successfully</span>' },
+          { type: 'wait', ms: 1200 },
+        ]
+      },
+      {
+        name: 'gut pr',
+        description: 'Generate PR descriptions',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut pr --create', delay: 60 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Analyzing branch...', duration: 600 },
+          { type: 'spinner', text: 'Comparing feature/auth to main...', duration: 800 },
+          { type: 'spinner', text: 'Generating PR description...', duration: 1800 },
+          { type: 'output', html: '\n<span class="bold">📝 Generated PR:</span>\n' },
+          { type: 'output', html: '<span class="cyan">Title:</span> <span class="white">feat(auth): Add secure API key storage using system keychain</span>' },
+          { type: 'output', html: '\n<span class="cyan">Description:</span>' },
+          { type: 'output', html: '<span class="gray">──────────────────────────────────────────────────</span>' },
+          { type: 'output', html: '## Summary' },
+          { type: 'output', html: 'This PR implements secure API key storage using the system\'s' },
+          { type: 'output', html: 'native credential manager.\n' },
+          { type: 'output', html: '## Changes' },
+          { type: 'output', html: '- Added keytar integration for secure key storage' },
+          { type: 'output', html: '- Support for multiple AI providers' },
+          { type: 'output', html: '<span class="gray">──────────────────────────────────────────────────</span>' },
+          { type: 'question', text: '\nCreate PR with this description? (y/N) ' },
+          { type: 'wait', ms: 600 },
+          { type: 'answer', text: 'y' },
+          { type: 'spinner', text: 'Creating PR...', duration: 1200 },
+          { type: 'output', html: '<span class="green">✓ PR created successfully!</span>' },
+          { type: 'output', html: '\n<span class="green">🔗 https://github.com/user/gut/pull/42</span>' },
+          { type: 'wait', ms: 1200 },
+        ]
+      },
+      {
+        name: 'gut review',
+        description: 'AI code review',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut review', delay: 60 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Analyzing changes...', duration: 2200 },
+          { type: 'output', html: '\n<span class="bold">🔍 Code Review Results</span>\n' },
+          { type: 'output', html: '<span class="cyan">Overall:</span> <span class="green">Good</span> - Code is well-structured\n' },
+          { type: 'output', html: '<span class="yellow">⚠ src/lib/credentials.ts:45</span>' },
+          { type: 'output', html: '  <span class="gray">Consider adding error handling for keychain failures</span>\n' },
+          { type: 'output', html: '<span class="green">✓ src/commands/auth.ts</span>' },
+          { type: 'output', html: '  <span class="gray">Clean implementation of the auth flow</span>\n' },
+          { type: 'output', html: '<span class="cyan">💡 Suggestion:</span>' },
+          { type: 'output', html: '  <span class="gray">Add input validation for API keys before storing</span>' },
+          { type: 'wait', ms: 1500 },
+        ]
+      },
+      {
+        name: 'gut branch',
+        description: 'Generate branch names from issues',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut branch 156 --checkout', delay: 60 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Fetching issue #156...', duration: 800 },
+          { type: 'output', html: '\n<span class="gray">Issue: Add dark mode support for the dashboard</span>\n' },
+          { type: 'spinner', text: 'Generating branch name...', duration: 1200 },
+          { type: 'output', html: '\n<span class="bold">Generated branch name:</span>' },
+          { type: 'output', html: '  <span class="green">feature/156-add-dark-mode-dashboard</span>\n' },
+          { type: 'question', text: 'Checkout this branch? (Y/n) ' },
+          { type: 'wait', ms: 500 },
+          { type: 'answer', text: 'y' },
+          { type: 'output', html: '<span class="green">✓ Switched to new branch \'feature/156-add-dark-mode-dashboard\'</span>' },
+          { type: 'wait', ms: 1200 },
+        ]
+      },
+      {
+        name: 'gut stash',
+        description: 'AI-named stashes',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut stash', delay: 60 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Analyzing changes...', duration: 1000 },
+          { type: 'spinner', text: 'Generating stash name...', duration: 1200 },
+          { type: 'output', html: '\n<span class="bold">Generated stash name:</span>' },
+          { type: 'output', html: '  <span class="green">WIP: refactor user authentication flow</span>\n' },
+          { type: 'output', html: '<span class="green">✓ Saved working directory: stash@{0}</span>' },
+          { type: 'wait', ms: 800 },
+          { type: 'prompt' },
+          { type: 'type', text: 'gut stash --list', delay: 60 },
+          { type: 'wait', ms: 300 },
+          { type: 'enter' },
+          { type: 'output', html: '\n<span class="cyan">stash@{0}</span>: <span class="white">WIP: refactor user authentication flow</span>' },
+          { type: 'output', html: '<span class="cyan">stash@{1}</span>: <span class="white">WIP: add email validation to signup</span>' },
+          { type: 'output', html: '<span class="cyan">stash@{2}</span>: <span class="white">WIP: fix navbar responsive layout</span>' },
+          { type: 'wait', ms: 1200 },
+        ]
+      },
+      {
+        name: 'gut find',
+        description: 'Find commits by description',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut find "fixed the login bug"', delay: 50 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Searching commits...', duration: 1500 },
+          { type: 'spinner', text: 'Analyzing 100 commits...', duration: 1800 },
+          { type: 'output', html: '\n<span class="bold">🔍 Found 3 matching commits:</span>\n' },
+          { type: 'output', html: '<span class="yellow">abc1234</span> <span class="white">fix(auth): resolve login session timeout issue</span>' },
+          { type: 'output', html: '  <span class="gray">Author: John Doe | 3 days ago</span>\n' },
+          { type: 'output', html: '<span class="yellow">def5678</span> <span class="white">fix(auth): fix login redirect loop on mobile</span>' },
+          { type: 'output', html: '  <span class="gray">Author: Jane Smith | 1 week ago</span>\n' },
+          { type: 'output', html: '<span class="yellow">ghi9012</span> <span class="white">fix(auth): handle special characters in password</span>' },
+          { type: 'output', html: '  <span class="gray">Author: John Doe | 2 weeks ago</span>' },
+          { type: 'wait', ms: 1500 },
+        ]
+      },
+      {
+        name: 'gut summary',
+        description: 'Generate work summaries',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut summary --weekly --markdown', delay: 50 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Analyzing commits from the past week...', duration: 1200 },
+          { type: 'spinner', text: 'Generating summary...', duration: 1800 },
+          { type: 'output', html: '\n<span class="bold">📊 Weekly Summary (Feb 12 - Feb 19)</span>\n' },
+          { type: 'output', html: '<span class="cyan">## Highlights</span>' },
+          { type: 'output', html: '- Implemented secure API key storage with system keychain' },
+          { type: 'output', html: '- Added support for multiple AI providers' },
+          { type: 'output', html: '- Fixed authentication flow edge cases\n' },
+          { type: 'output', html: '<span class="cyan">## Stats</span>' },
+          { type: 'output', html: '- <span class="green">12 commits</span> | <span class="green">+847</span> / <span class="red">-234</span> lines' },
+          { type: 'output', html: '- 8 files changed across 3 features\n' },
+          { type: 'output', html: '<span class="green">✓ Copied to clipboard</span>' },
+          { type: 'wait', ms: 1500 },
+        ]
+      },
+      {
+        name: 'gut explain',
+        description: 'Explain changes & PRs',
+        steps: [
+          { type: 'prompt' },
+          { type: 'type', text: 'gut explain #42', delay: 60 },
+          { type: 'wait', ms: 400 },
+          { type: 'enter' },
+          { type: 'spinner', text: 'Fetching PR #42...', duration: 800 },
+          { type: 'spinner', text: 'Analyzing changes...', duration: 1800 },
+          { type: 'output', html: '\n<span class="bold">📖 PR #42 Explanation</span>\n' },
+          { type: 'output', html: '<span class="cyan">Purpose:</span>' },
+          { type: 'output', html: 'This PR adds secure storage for API keys using the system\'s' },
+          { type: 'output', html: 'native credential manager instead of plain text files.\n' },
+          { type: 'output', html: '<span class="cyan">Key Changes:</span>' },
+          { type: 'output', html: '1. <span class="purple">credentials.ts</span> - New keytar-based storage' },
+          { type: 'output', html: '2. <span class="purple">auth.ts</span> - Login/logout command handlers' },
+          { type: 'output', html: '3. <span class="purple">config.ts</span> - Provider selection logic\n' },
+          { type: 'output', html: '<span class="cyan">Impact:</span> <span class="green">Low risk</span> - backwards compatible' },
+          { type: 'wait', ms: 1500 },
+        ]
+      }
+    ];
+
+    // Build scenario selector buttons
+    function buildScenarioSelector() {
+      scenarioSelector.innerHTML = '';
+      scenarios.forEach((scenario, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'scenario-btn';
+        btn.textContent = scenario.name;
+        btn.title = scenario.description;
+        btn.onclick = () => runSingleScenario(index);
+        scenarioSelector.appendChild(btn);
+      });
+    }
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function createLine() {
+      const line = document.createElement('div');
+      line.className = 'line';
+      terminal.appendChild(line);
+      return line;
+    }
+
+    async function typeText(text, delay = 50) {
+      for (const char of text) {
+        if (!isRunning) return;
+        currentLineEl.innerHTML = currentLineEl.innerHTML.replace('<span class="cursor"></span>', '');
+        currentLineEl.innerHTML += char + '<span class="cursor"></span>';
+        await sleep(delay);
+      }
+    }
+
+    async function showPrompt() {
+      currentLineEl = createLine();
+      currentLineEl.innerHTML = '<span class="prompt">~/project</span> <span class="cyan">❯</span> <span class="cursor"></span>';
+    }
+
+    async function showSpinner(text, duration) {
+      currentLineEl = createLine();
+      currentLineEl.innerHTML = `<span class="spinner"></span> <span class="cyan">${text}</span>`;
+      await sleep(duration);
+      if (currentLineEl) currentLineEl.remove();
+    }
+
+    async function showOutput(html) {
+      const line = createLine();
+      line.innerHTML = html;
+    }
+
+    async function showQuestion(text) {
+      currentLineEl = createLine();
+      currentLineEl.innerHTML = `<span class="cyan">${text}</span><span class="cursor"></span>`;
+    }
+
+    async function showAnswer(text) {
+      currentLineEl.innerHTML = currentLineEl.innerHTML.replace('<span class="cursor"></span>', '');
+      currentLineEl.innerHTML += `<span class="white">${text}</span>`;
+      await sleep(100);
+      createLine();
+    }
+
+    function updateScenarioBadge(name) {
+      scenarioBadge.textContent = name;
+      scenarioBadge.style.display = 'inline-block';
+    }
+
+    function updateProgress(current, total) {
+      const percent = ((current + 1) / total) * 100;
+      progressFill.style.width = `${percent}%`;
+    }
+
+    function highlightScenarioBtn(index) {
+      document.querySelectorAll('.scenario-btn').forEach((btn, i) => {
+        btn.classList.toggle('active', i === index);
+      });
+    }
+
+    async function runScenario(scenario, index, total) {
+      updateScenarioBadge(scenario.name);
+      updateProgress(index, total);
+      highlightScenarioBtn(index);
+
+      for (const step of scenario.steps) {
+        if (!isRunning) break;
+
+        switch (step.type) {
+          case 'prompt':
+            await showPrompt();
+            break;
+          case 'type':
+            await typeText(step.text, step.delay);
+            break;
+          case 'wait':
+            await sleep(step.ms);
+            break;
+          case 'enter':
+            if (currentLineEl) {
+              currentLineEl.innerHTML = currentLineEl.innerHTML.replace('<span class="cursor"></span>', '');
+            }
+            break;
+          case 'spinner':
+            await showSpinner(step.text, step.duration);
+            break;
+          case 'output':
+            await showOutput(step.html);
+            await sleep(30);
+            break;
+          case 'question':
+            await showQuestion(step.text);
+            break;
+          case 'answer':
+            await showAnswer(step.text);
+            break;
+        }
+
+        terminal.scrollTop = terminal.scrollHeight;
+      }
+    }
+
+    async function runSingleScenario(index) {
+      if (isRunning) return;
+
+      isRunning = true;
+      playBtn.disabled = true;
+      resetBtn.disabled = true;
+      terminal.innerHTML = '';
+
+      await runScenario(scenarios[index], index, scenarios.length);
+
+      if (isRunning) {
+        await showPrompt();
+      }
+
+      isRunning = false;
+      playBtn.disabled = false;
+      resetBtn.disabled = false;
+      scenarioBadge.style.display = 'none';
+      highlightScenarioBtn(-1);
+    }
+
+    async function startDemo() {
+      if (isRunning) return;
+
+      isRunning = true;
+      playBtn.disabled = true;
+      playBtn.textContent = 'Running...';
+      terminal.innerHTML = '';
+
+      for (let i = 0; i < scenarios.length && isRunning; i++) {
+        await runScenario(scenarios[i], i, scenarios.length);
+      }
+
+      if (isRunning) {
+        await showPrompt();
+      }
+
+      isRunning = false;
+      playBtn.disabled = false;
+      playBtn.textContent = 'Replay All';
+      scenarioBadge.style.display = 'none';
+      highlightScenarioBtn(-1);
+      progressFill.style.width = '100%';
+    }
+
+    function resetDemo() {
+      isRunning = false;
+      terminal.innerHTML = '';
+      playBtn.disabled = false;
+      playBtn.textContent = 'Play All Demos';
+      progressFill.style.width = '0%';
+      scenarioBadge.style.display = 'none';
+      highlightScenarioBtn(-1);
+
+      currentLineEl = createLine();
+      currentLineEl.innerHTML = '<span class="prompt">~/project</span> <span class="cyan">❯</span> <span class="cursor"></span>';
+    }
+
+    // Initialize
+    buildScenarioSelector();
+    resetDemo();
+  </script>
+</body>
+</html>
