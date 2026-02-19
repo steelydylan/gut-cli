@@ -2,6 +2,8 @@
 
 **Git Utility Tool** - AI-powered git commands for smarter workflows.
 
+![gut-cli demo](https://jsers.dev/images/gut-demo.gif)
+
 ## Why gut?
 
 Working with git involves many small decisions that add up: writing clear commit messages, naming branches, describing pull requests, coming up with stash names you'll actually remember. These tasks aren't hard, but they interrupt your flow and take more time than they should.
