@@ -61,3 +61,20 @@ export function getExistingPrUrl(): string | null {
     return null
   }
 }
+
+export function hasUpstreamBranch(): boolean {
+  try {
+    execSync('git rev-parse --abbrev-ref @{upstream}', {
+      stdio: ['pipe', 'pipe', 'pipe']
+    })
+    return true
+  } catch {
+    return false
+  }
+}
+
+export function pushBranchToOrigin(branch: string): void {
+  execSync(`git push -u origin ${branch}`, {
+    stdio: ['pipe', 'pipe', 'pipe']
+  })
+}

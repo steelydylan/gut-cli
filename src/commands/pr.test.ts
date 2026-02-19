@@ -82,7 +82,9 @@ vi.mock('../lib/config.js', () => ({
 vi.mock('../lib/gh.js', () => ({
   isGhCliInstalled: vi.fn(() => false),
   getDefaultBranch: vi.fn(() => null),
-  getExistingPrUrl: vi.fn(() => null)
+  getExistingPrUrl: vi.fn(() => null),
+  hasUpstreamBranch: vi.fn(() => true),
+  pushBranchToOrigin: vi.fn()
 }))
 
 // Mock simple-git
@@ -237,6 +239,61 @@ describe('prCommand', () => {
         (call) => typeof call[0] === 'string' && call[0].includes(prUrl)
       )
       expect(urlCall).toBeDefined()
+    })
+
+    it('should prompt to push when no upstream branch exists', async () => {
+      const { isGhCliInstalled, hasUpstreamBranch, pushBranchToOrigin } = await import(
+        '../lib/gh.js'
+      )
+      const readline = await import('node:readline')
+
+      // Mock gh CLI as installed but no upstream branch
+      vi.mocked(isGhCliInstalled).mockReturnValue(true)
+      vi.mocked(hasUpstreamBranch).mockReturnValue(false)
+
+      // Mock user confirms push, then confirms PR creation
+      let callCount = 0
+      vi.mocked(readline.createInterface).mockReturnValue({
+        question: vi.fn((_prompt: string, callback: (answer: string) => void) => {
+          callCount++
+          callback('y')
+        }),
+        close: vi.fn()
+      } as unknown as ReturnType<typeof readline.createInterface>)
+
+      await prCommand.parseAsync([], { from: 'user' })
+
+      // Verify push was called
+      expect(pushBranchToOrigin).toHaveBeenCalledWith('feature/new-feature')
+    })
+
+    it('should abort when user declines to push', async () => {
+      const { isGhCliInstalled, hasUpstreamBranch, pushBranchToOrigin } = await import(
+        '../lib/gh.js'
+      )
+      const readline = await import('node:readline')
+
+      vi.mocked(isGhCliInstalled).mockReturnValue(true)
+      vi.mocked(hasUpstreamBranch).mockReturnValue(false)
+
+      // Mock user declines push
+      vi.mocked(readline.createInterface).mockReturnValue({
+        question: vi.fn((_prompt: string, callback: (answer: string) => void) => callback('n')),
+        close: vi.fn()
+      } as unknown as ReturnType<typeof readline.createInterface>)
+
+      const consoleSpy = vi.spyOn(console, 'log')
+
+      await prCommand.parseAsync([], { from: 'user' })
+
+      // Verify push was not called
+      expect(pushBranchToOrigin).not.toHaveBeenCalled()
+
+      // Verify abort message was displayed
+      const abortCall = consoleSpy.mock.calls.find(
+        (call) => typeof call[0] === 'string' && call[0].includes('Aborted')
+      )
+      expect(abortCall).toBeDefined()
     })
 
     it('should update existing PR instead of creating new one', async () => {
