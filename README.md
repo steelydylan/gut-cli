@@ -2,7 +2,7 @@
 
 **Git Utility Tool** - AI-powered git commands for smarter workflows.
 
-![gut-cli demo](https://jsers.dev/images/gut-demo.gif)
+![gut-cli demo](https://storage.googleapis.com/zenn-user-upload/fa7b7c71ec82-20260219.gif)
 
 ## Why gut?
 
