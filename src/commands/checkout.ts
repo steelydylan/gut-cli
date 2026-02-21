@@ -3,12 +3,14 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateBranchNameFromDiff } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const checkoutCommand = new Command('checkout')
   .description('Generate a branch name from current diff and checkout')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-y, --yes', 'Skip confirmation and checkout directly')
   .option('-s, --staged', 'Use staged changes only instead of all changes')
   .action(async (options) => {
@@ -64,7 +66,11 @@ export const checkoutCommand = new Command('checkout')
     try {
       const branchName = await generateBranchNameFromDiff(
         diff,
-        { provider, model: options.model },
+        {
+          provider,
+          model: options.model,
+          baseUrl: options.baseUrl || getBaseUrl()
+        },
         template
       )
 

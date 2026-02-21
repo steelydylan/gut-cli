@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { type Changelog, findTemplate, generateChangelog } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 function formatChangelog(changelog: Changelog): string {
@@ -39,6 +40,7 @@ export const changelogCommand = new Command('changelog')
   .argument('[to]', 'Ending ref', 'HEAD')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-t, --tag <tag>', 'Generate changelog since this tag')
   .option('--json', 'Output as JSON')
   .action(async (from, to, options) => {
@@ -93,7 +95,11 @@ export const changelogCommand = new Command('changelog')
 
       const changelog = await generateChangelog(
         { commits, diff, fromRef, toRef },
-        { provider, model: options.model },
+        {
+          provider,
+          model: options.model,
+          baseUrl: options.baseUrl || getBaseUrl()
+        },
         template || undefined
       )
 

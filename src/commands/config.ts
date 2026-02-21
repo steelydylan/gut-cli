@@ -12,6 +12,7 @@ import {
   getLocalConfig,
   isValidLanguage,
   isValidProvider,
+  setBaseUrl,
   setLanguage,
   setModel,
   setProvider,
@@ -76,9 +77,19 @@ configCommand
         console.error(chalk.red((err as Error).message))
         process.exit(1)
       }
+    } else if (key === 'baseUrl') {
+      try {
+        setBaseUrl(value, options.local ?? false)
+        const scope = options.local ? '(local)' : '(global)'
+        console.log(chalk.green(`✓ Base URL set to: ${value} ${scope}`))
+        console.log(chalk.gray('Applies to all AI providers (OpenAI, Anthropic, Gemini, Ollama)'))
+      } catch (err) {
+        console.error(chalk.red((err as Error).message))
+        process.exit(1)
+      }
     } else {
       console.error(chalk.red(`Unknown config key: ${key}`))
-      console.error(chalk.gray('Available keys: lang, model, provider'))
+      console.error(chalk.gray('Available keys: lang, model, provider, baseUrl'))
       process.exit(1)
     }
   })

@@ -16,7 +16,8 @@ export type { Language }
 export interface AIOptions {
   provider: Provider
   model?: string
-  ollamaBaseUrl?: string // For Ollama provider
+  baseUrl?: string // Base URL for all providers
+  ollamaBaseUrl?: string // For Ollama provider (backward compatibility)
   apiKey?: string // Optional: directly provide API key (bypasses keytar/env lookup)
   language?: Language // Language for AI responses ('en' | 'ja')
 }
@@ -159,23 +160,31 @@ async function getModel(options: AIOptions) {
   switch (options.provider) {
     case 'gemini': {
       const apiKey = await resolveApiKey()
-      const google = createGoogleGenerativeAI({ apiKey: apiKey! })
+      const google = createGoogleGenerativeAI({
+        apiKey: apiKey!,
+        ...(options.baseUrl && { baseURL: options.baseUrl })
+      })
       return google(modelName)
     }
     case 'openai': {
       const apiKey = await resolveApiKey()
-      const openai = createOpenAI({ apiKey: apiKey! })
+      const openai = createOpenAI({
+        apiKey: apiKey!,
+        ...(options.baseUrl && { baseURL: options.baseUrl })
+      })
       return openai(modelName)
     }
     case 'anthropic': {
       const apiKey = await resolveApiKey()
-      const anthropic = createAnthropic({ apiKey: apiKey! })
+      const anthropic = createAnthropic({
+        apiKey: apiKey!,
+        ...(options.baseUrl && { baseURL: options.baseUrl })
+      })
       return anthropic(modelName)
     }
     case 'ollama': {
-      const ollama = createOllama({
-        baseURL: options.ollamaBaseUrl || 'http://localhost:11434/api'
-      })
+      const baseURL = options.ollamaBaseUrl || options.baseUrl || 'http://localhost:11434/api'
+      const ollama = createOllama({ baseURL })
       return ollama(modelName)
     }
   }

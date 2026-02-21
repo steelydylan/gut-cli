@@ -5,6 +5,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, resolveConflict } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const mergeCommand = new Command('merge')
@@ -12,6 +13,7 @@ export const mergeCommand = new Command('merge')
   .argument('<branch>', 'Branch to merge')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('--no-commit', 'Do not auto-commit after resolving')
   .action(async (branch, options) => {
     const git = simpleGit()
@@ -94,7 +96,11 @@ export const mergeCommand = new Command('merge')
             oursRef: currentBranch,
             theirsRef: branch
           },
-          { provider, model: options.model },
+          {
+            provider,
+            model: options.model,
+            baseUrl: options.baseUrl || getBaseUrl()
+          },
           template || undefined
         )
 

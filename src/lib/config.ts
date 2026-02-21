@@ -10,6 +10,7 @@ export interface GutConfig {
   lang: Language
   model?: string
   provider?: Provider
+  baseUrl?: string
 }
 
 const DEFAULT_CONFIG: GutConfig = {
@@ -161,5 +162,34 @@ export function setProvider(provider: Provider, local: boolean = false): void {
     setLocalConfig('provider', provider)
   } else {
     setGlobalConfig('provider', provider)
+  }
+}
+
+export function getBaseUrl(): string | undefined {
+  return getConfig().baseUrl
+}
+
+export function setBaseUrl(url: string, local: boolean = false): void {
+  if (url === '') {
+    // Clear the setting
+    const path = local ? getLocalConfigPath() : getGlobalConfigPath()
+    if (local && !path) throw new Error('Not in a git repository')
+    const config = local ? getLocalConfig() : getGlobalConfig()
+    delete config.baseUrl
+    writeFileSync(path || getGlobalConfigPath(), JSON.stringify(config, null, 2))
+    return
+  }
+
+  // URL validation
+  try {
+    new URL(url)
+  } catch {
+    throw new Error(`Invalid URL: ${url}`)
+  }
+
+  if (local) {
+    setLocalConfig('baseUrl', url)
+  } else {
+    setGlobalConfig('baseUrl', url)
   }
 }

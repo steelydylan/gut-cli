@@ -5,6 +5,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateGitignore } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 // Config files that indicate language/framework
@@ -125,6 +126,7 @@ export const gitignoreCommand = new Command('gitignore')
   .description('Generate .gitignore from current codebase')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-o, --output <file>', 'Output file (default: .gitignore)', '.gitignore')
   .option('--stdout', 'Print to stdout instead of file')
   .option('-y, --yes', 'Overwrite existing .gitignore without confirmation')
@@ -172,7 +174,11 @@ export const gitignoreCommand = new Command('gitignore')
           configFiles: configFilesStr,
           existingGitignore
         },
-        { provider, model: options.model },
+        {
+          provider,
+          model: options.model,
+          baseUrl: options.baseUrl || getBaseUrl()
+        },
         template || undefined
       )
 
