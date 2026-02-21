@@ -201,7 +201,7 @@ export async function generateCommitMessage(
   const result = await generateText({
     model,
     prompt,
-    maxTokens: 500
+    maxTokens: 1024
   })
 
   return result.text.trim()
@@ -572,7 +572,7 @@ export async function generateBranchName(
   const result = await generateText({
     model,
     prompt,
-    maxTokens: 100
+    maxTokens: 1024
   })
 
   return result.text.trim().replace(/[^a-zA-Z0-9/_-]/g, '')
@@ -598,7 +598,7 @@ export async function generateBranchNameFromDiff(
   const result = await generateText({
     model,
     prompt,
-    maxTokens: 100
+    maxTokens: 1024
   })
 
   return result.text.trim().replace(/[^a-zA-Z0-9/_-]/g, '')
@@ -624,7 +624,7 @@ export async function generateStashName(
   const result = await generateText({
     model,
     prompt,
-    maxTokens: 100
+    maxTokens: 1024
   })
 
   return result.text.trim()
