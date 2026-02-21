@@ -6,6 +6,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generatePRDescription } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { getDefaultBranch, getExistingPrUrl, isGhCliInstalled } from '../lib/gh.js'
 
@@ -34,6 +35,7 @@ export const prCommand = new Command('pr')
   .description('Generate a pull request title and description using AI')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-b, --base <branch>', 'Base branch to compare against (default: main or master)')
   .option('--create', 'Create the PR using gh CLI')
   .option('--copy', 'Copy the description to clipboard')
@@ -108,7 +110,11 @@ export const prCommand = new Command('pr')
           commits,
           diff
         },
-        { provider, model: options.model },
+        {
+          provider,
+          model: options.model,
+          baseUrl: options.baseUrl || getBaseUrl()
+        },
         template || undefined
       )
 

@@ -4,6 +4,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { type CodeReview, findTemplate, generateCodeReview } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 
@@ -48,6 +49,7 @@ export const reviewCommand = new Command('review')
   .argument('[pr-number]', 'GitHub PR number to review')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-s, --staged', 'Review only staged changes')
   .option('-c, --commit <hash>', 'Review a specific commit')
   .option('--json', 'Output as JSON')
@@ -108,7 +110,11 @@ export const reviewCommand = new Command('review')
 
       const review = await generateCodeReview(
         diff,
-        { provider, model: options.model },
+        {
+          provider,
+          model: options.model,
+          baseUrl: options.baseUrl || getBaseUrl()
+        },
         template || undefined
       )
 

@@ -3,12 +3,14 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateCommitMessage } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const commitCommand = new Command('commit')
   .description('Generate a commit message using AI')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-c, --commit', 'Automatically commit with the generated message')
   .option('-a, --all', 'Force stage all changes (default: auto-stage if nothing staged)')
   .action(async (options) => {
@@ -58,7 +60,11 @@ export const commitCommand = new Command('commit')
     try {
       const message = await generateCommitMessage(
         diff,
-        { provider, model: options.model },
+        {
+          provider,
+          model: options.model,
+          baseUrl: options.baseUrl || getBaseUrl()
+        },
         template || undefined
       )
 

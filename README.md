@@ -540,6 +540,48 @@ Each template uses `{{variable}}` syntax for dynamic content.
 
 **Special case**: `.github/pull_request_template.md` is prioritized over `pr.md` for PR descriptions.
 
+## Custom API Endpoints
+
+Configure custom base URLs for AI providers (useful for proxies, local instances, or API-compatible services):
+
+### Global Configuration
+```bash
+# Set base URL for all AI commands
+gut config set baseUrl https://api.example.com/v1
+
+# View current config
+gut config list
+```
+
+### Per-Command Override
+```bash
+gut commit --base-url https://api.example.com/v1
+gut pr --base-url https://my-proxy.com
+```
+
+### Local (Project-Specific)
+```bash
+gut config set baseUrl https://api.example.com/v1 --local
+```
+
+### Examples
+```bash
+# OpenAI-compatible API (Groq)
+gut config set provider openai
+gut config set baseUrl https://api.groq.com/openai/v1
+
+# Local Ollama on different port
+gut commit --provider ollama --base-url http://192.168.1.100:11434/api
+```
+
+### Priority Order
+1. CLI flag `--base-url` (highest)
+2. Local config (`.gut/config.json`)
+3. Global config (`~/.config/gut/config.json`)
+4. Provider defaults (lowest)
+
+**Note**: For Ollama, the legacy `ollamaBaseUrl` config takes priority over `baseUrl` for backward compatibility.
+
 ## Development
 
 ```bash

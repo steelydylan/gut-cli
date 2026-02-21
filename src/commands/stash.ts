@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateStashName } from '../lib/ai.js'
+import { getBaseUrl } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const stashCommand = new Command('stash')
@@ -10,6 +11,7 @@ export const stashCommand = new Command('stash')
   .argument('[name]', 'Custom stash name (skips AI generation)')
   .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
   .option('-m, --model <model>', 'Model to use (provider-specific)')
+  .option('--base-url <url>', 'Base URL for API provider')
   .option('-l, --list', 'List all stashes')
   .option('-a, --apply [index]', 'Apply stash (default: latest)')
   .option('--pop [index]', 'Pop stash (default: latest)')
@@ -137,7 +139,11 @@ export const stashCommand = new Command('stash')
           const template = findTemplate(repoRoot.trim(), 'stash')
           stashName = await generateStashName(
             fullDiff,
-            { provider, model: options.model },
+            {
+              provider,
+              model: options.model,
+              baseUrl: options.baseUrl || getBaseUrl()
+            },
             template || undefined
           )
           spinner.stop()
