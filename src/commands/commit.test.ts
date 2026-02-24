@@ -58,7 +58,8 @@ vi.mock('../lib/credentials.js', () => ({
 // Mock config
 vi.mock('../lib/config.js', () => ({
   getConfiguredModel: vi.fn(() => undefined),
-  getDefaultModel: vi.fn(() => 'gemini-2.5-flash')
+  getDefaultModel: vi.fn(() => 'gemini-2.5-flash'),
+  getLanguage: vi.fn(() => 'en')
 }))
 
 // Mock simple-git
