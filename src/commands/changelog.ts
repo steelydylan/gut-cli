@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { type Changelog, findTemplate, generateChangelog } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 function formatChangelog(changelog: Changelog): string {
@@ -93,7 +94,7 @@ export const changelogCommand = new Command('changelog')
 
       const changelog = await generateChangelog(
         { commits, diff, fromRef, toRef },
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         template || undefined
       )
 

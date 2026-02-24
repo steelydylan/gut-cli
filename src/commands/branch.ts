@@ -4,6 +4,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateBranchName } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 
@@ -83,7 +84,7 @@ export const branchCommand = new Command('branch')
     try {
       const branchName = await generateBranchName(
         description,
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         { type: options.type, issue: issueNumber },
         template || undefined
       )

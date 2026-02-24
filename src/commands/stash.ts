@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateStashName } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const stashCommand = new Command('stash')
@@ -137,7 +138,7 @@ export const stashCommand = new Command('stash')
           const template = findTemplate(repoRoot.trim(), 'stash')
           stashName = await generateStashName(
             fullDiff,
-            { provider, model: options.model },
+            { provider, model: options.model, language: getLanguage() },
             template || undefined
           )
           spinner.stop()

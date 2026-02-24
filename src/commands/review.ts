@@ -4,6 +4,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { type CodeReview, findTemplate, generateCodeReview } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
 
@@ -108,7 +109,7 @@ export const reviewCommand = new Command('review')
 
       const review = await generateCodeReview(
         diff,
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         template || undefined
       )
 

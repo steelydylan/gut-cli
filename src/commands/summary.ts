@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateWorkSummary, type WorkSummary } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const summaryCommand = new Command('summary')
@@ -99,7 +100,7 @@ export const summaryCommand = new Command('summary')
 
       const summary = await generateWorkSummary(
         { commits, author, since, until: options.until, diff },
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         format,
         template || undefined
       )

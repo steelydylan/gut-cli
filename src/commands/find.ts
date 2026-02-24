@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { type CommitSearchResult, findTemplate, searchCommits } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const findCommand = new Command('find')
@@ -77,7 +78,7 @@ export const findCommand = new Command('find')
       const results = await searchCommits(
         query,
         commits,
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         parseInt(options.maxResults, 10),
         template || undefined
       )

@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateCommitMessage } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const commitCommand = new Command('commit')
@@ -58,7 +59,7 @@ export const commitCommand = new Command('commit')
     try {
       const message = await generateCommitMessage(
         diff,
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         template || undefined
       )
 

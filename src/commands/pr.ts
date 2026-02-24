@@ -6,6 +6,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generatePRDescription } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import {
   getDefaultBranch,
@@ -114,7 +115,7 @@ export const prCommand = new Command('pr')
           commits,
           diff
         },
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         template || undefined
       )
 

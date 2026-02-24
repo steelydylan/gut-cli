@@ -5,6 +5,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, resolveConflict } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const mergeCommand = new Command('merge')
@@ -94,7 +95,7 @@ export const mergeCommand = new Command('merge')
             oursRef: currentBranch,
             theirsRef: branch
           },
-          { provider, model: options.model },
+          { provider, model: options.model, language: getLanguage() },
           template || undefined
         )
 

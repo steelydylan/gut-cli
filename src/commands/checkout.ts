@@ -3,6 +3,7 @@ import { Command } from 'commander'
 import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { findTemplate, generateBranchNameFromDiff } from '../lib/ai.js'
+import { getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 
 export const checkoutCommand = new Command('checkout')
@@ -64,7 +65,7 @@ export const checkoutCommand = new Command('checkout')
     try {
       const branchName = await generateBranchNameFromDiff(
         diff,
-        { provider, model: options.model },
+        { provider, model: options.model, language: getLanguage() },
         template
       )
 
