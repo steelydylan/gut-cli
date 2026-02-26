@@ -85,10 +85,20 @@ export const prCommand = new Command('pr')
         process.exit(1)
       }
 
-      spinner.text = `Comparing ${currentBranch} to ${baseBranch}...`
+      // Fetch remote base branch for accurate comparison
+      spinner.text = `Fetching origin/${baseBranch}...`
+      let compareRef = baseBranch
+      try {
+        await git.fetch('origin', baseBranch)
+        compareRef = `origin/${baseBranch}`
+      } catch {
+        // If fetch fails (e.g., no remote), fall back to local branch
+      }
+
+      spinner.text = `Comparing ${currentBranch} to ${compareRef}...`
 
       // Get commits
-      const log = await git.log({ from: baseBranch, to: currentBranch })
+      const log = await git.log({ from: compareRef, to: currentBranch })
       const commits = log.all.map((c) => c.message.split('\n')[0])
 
       if (commits.length === 0) {
@@ -97,7 +107,7 @@ export const prCommand = new Command('pr')
       }
 
       // Get diff
-      const diff = await git.diff([`${baseBranch}...${currentBranch}`])
+      const diff = await git.diff([`${compareRef}...${currentBranch}`])
 
       // Find PR template
       const repoRoot = await git.revparse(['--show-toplevel'])
