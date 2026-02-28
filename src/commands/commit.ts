@@ -5,10 +5,11 @@ import { simpleGit } from 'simple-git'
 import { findTemplate, generateCommitMessage } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 export const commitCommand = new Command('commit')
   .description('Generate a commit message using AI')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-c, --commit', 'Automatically commit with the generated message')

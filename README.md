@@ -57,6 +57,7 @@ See [Authentication](#gut-auth) and [Template Configuration](#template-configura
 | `gut lang` | Set or show output language |
 | `gut init` | Initialize .gut/ templates in your project |
 | `gut gitignore` | Generate .gitignore from codebase |
+| `gut completion` | Generate shell completion script |
 
 ### `gut commit`
 
@@ -499,6 +500,24 @@ API keys can also be set via environment variables:
 - `GUT_GEMINI_API_KEY` or `GEMINI_API_KEY`
 - `GUT_OPENAI_API_KEY` or `OPENAI_API_KEY`
 - `GUT_ANTHROPIC_API_KEY` or `ANTHROPIC_API_KEY`
+
+### `gut completion`
+
+Enable shell tab completion (Bash, Zsh, or Fish).
+
+```bash
+# Install completion (auto-detects your shell)
+gut completion install
+
+# Uninstall completion
+gut completion uninstall
+```
+
+After installation, restart your shell or source your profile. Then:
+- `gut c<TAB>` → suggests `commit`, `config`, `changelog`, etc.
+- `gut commit --<TAB>` → suggests `--provider`, `--model`, etc.
+- `gut commit --provider <TAB>` → suggests `gemini`, `openai`, `anthropic`, `ollama`
+- `gut auth <TAB>` → suggests `login`, `logout`, `status`
 
 ## Security
 

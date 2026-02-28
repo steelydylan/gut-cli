@@ -5,6 +5,7 @@ import { simpleGit } from 'simple-git'
 import { type CommitSearchResult, findTemplate, searchCommits } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 export const findCommand = new Command('find')
   .description('Find commits matching a vague description using AI')
@@ -12,7 +13,7 @@ export const findCommand = new Command('find')
     '<query>',
     'Description of the change you are looking for (e.g., "login feature added")'
   )
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-n, --num <n>', 'Number of commits to search through', '100')

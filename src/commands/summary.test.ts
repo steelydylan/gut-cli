@@ -67,7 +67,8 @@ vi.mock('ollama-ai-provider', () => ({
 // Mock credentials
 vi.mock('../lib/credentials.js', () => ({
   resolveProvider: vi.fn(() => Promise.resolve('gemini')),
-  getApiKey: vi.fn(() => 'test-api-key')
+  getApiKey: vi.fn(() => 'test-api-key'),
+  PROVIDERS: ['gemini', 'openai', 'anthropic', 'ollama']
 }))
 
 // Mock config

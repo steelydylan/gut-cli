@@ -26,7 +26,8 @@ vi.mock('../lib/credentials.js', () => ({
   saveApiKey: (...args: unknown[]) => mockSaveApiKey(...args),
   deleteApiKey: (...args: unknown[]) => mockDeleteApiKey(...args),
   listProviders: () => mockListProviders(),
-  getProviderDisplayName: (p: string) => mockGetProviderDisplayName(p)
+  getProviderDisplayName: (p: string) => mockGetProviderDisplayName(p),
+  PROVIDERS: ['gemini', 'openai', 'anthropic', 'ollama']
 }))
 
 // Import the command after mocks

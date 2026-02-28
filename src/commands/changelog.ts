@@ -5,6 +5,7 @@ import { simpleGit } from 'simple-git'
 import { type Changelog, findTemplate, generateChangelog } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 function formatChangelog(changelog: Changelog): string {
   const lines: string[] = []
@@ -38,7 +39,7 @@ export const changelogCommand = new Command('changelog')
   .description('Generate a changelog from commits between refs')
   .argument('[from]', 'Starting ref (tag, branch, commit)', 'HEAD~10')
   .argument('[to]', 'Ending ref', 'HEAD')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-t, --tag <tag>', 'Generate changelog since this tag')

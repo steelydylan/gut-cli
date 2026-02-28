@@ -5,11 +5,12 @@ import { simpleGit } from 'simple-git'
 import { findTemplate, generateStashName } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 export const stashCommand = new Command('stash')
   .description('Stash changes with AI-generated name')
   .argument('[name]', 'Custom stash name (skips AI generation)')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-l, --list', 'List all stashes')

@@ -7,6 +7,7 @@ import { type CodeReview, findTemplate, generateCodeReview } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
+import { providerOption } from '../lib/options.js'
 
 interface PRInfo {
   number: number
@@ -47,7 +48,7 @@ async function getPRDiff(prNumber: string): Promise<{ diff: string; prInfo: PRIn
 export const reviewCommand = new Command('review')
   .description('Get an AI code review of your changes or a GitHub PR')
   .argument('[pr-number]', 'GitHub PR number to review')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-s, --staged', 'Review only staged changes')

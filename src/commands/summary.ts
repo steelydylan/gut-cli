@@ -5,10 +5,11 @@ import { simpleGit } from 'simple-git'
 import { findTemplate, generateWorkSummary, type WorkSummary } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 export const summaryCommand = new Command('summary')
   .description('Generate a work summary from your commits (for daily/weekly reports)')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('--since <date>', 'Start date (default: today)', 'today')

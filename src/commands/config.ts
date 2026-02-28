@@ -3,9 +3,10 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import chalk from 'chalk'
-import { Command } from 'commander'
+import { Argument, Command } from 'commander'
 import { simpleGit } from 'simple-git'
 import {
+  CONFIG_KEYS,
   DEFAULT_MODELS,
   type GutConfig,
   getConfig,
@@ -29,7 +30,9 @@ function openFolder(path: string): void {
 export const configCommand = new Command('config').description('Manage gut configuration')
 
 configCommand
-  .command('set <key> <value>')
+  .command('set')
+  .addArgument(new Argument('<key>', 'Config key').choices([...CONFIG_KEYS]))
+  .addArgument(new Argument('<value>', 'Config value'))
   .description('Set a configuration value')
   .option('--local', 'Set for current repository only')
   .action((key: string, value: string, options: { local?: boolean }) => {
@@ -95,7 +98,8 @@ configCommand
   })
 
 configCommand
-  .command('get <key>')
+  .command('get')
+  .addArgument(new Argument('<key>', 'Config key').choices([...CONFIG_KEYS]))
   .description('Get a configuration value')
   .action((key: string) => {
     const config = getConfig()

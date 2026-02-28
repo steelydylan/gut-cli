@@ -3,7 +3,15 @@ import { getConfiguredProvider } from './config.js'
 
 const SERVICE_NAME = 'gut-cli'
 
-export type Provider = 'gemini' | 'openai' | 'anthropic' | 'ollama'
+export const PROVIDERS = ['gemini', 'openai', 'anthropic', 'ollama'] as const
+export type Provider = (typeof PROVIDERS)[number]
+
+export const PROVIDER_DESCRIPTIONS: Record<Provider, string> = {
+  gemini: 'Google Gemini',
+  openai: 'OpenAI GPT',
+  anthropic: 'Anthropic Claude',
+  ollama: 'Ollama (local)'
+}
 
 // Providers that require API keys
 type ApiKeyProvider = Exclude<Provider, 'ollama'>

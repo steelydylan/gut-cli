@@ -8,6 +8,7 @@ import { findTemplate, generateExplanation } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
+import { providerOption } from '../lib/options.js'
 
 export const explainCommand = new Command('explain')
   .description('Get an AI-powered explanation of changes, commits, PRs, or files')
@@ -15,7 +16,7 @@ export const explainCommand = new Command('explain')
     '[target]',
     'Commit hash, PR number, PR URL, or file path (default: uncommitted changes)'
   )
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-s, --staged', 'Explain only staged changes')

@@ -15,6 +15,7 @@ import {
   isGhCliInstalled,
   pushBranchToOrigin
 } from '../lib/gh.js'
+import { providerOption } from '../lib/options.js'
 
 // GitHub's conventional PR template paths (prioritized)
 const GITHUB_PR_TEMPLATE_PATHS = [
@@ -39,7 +40,7 @@ function findPRTemplate(repoRoot: string): string | null {
 
 export const prCommand = new Command('pr')
   .description('Generate a pull request title and description using AI')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-b, --base <branch>', 'Base branch to compare against (default: main or master)')

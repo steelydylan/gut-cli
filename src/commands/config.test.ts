@@ -35,11 +35,13 @@ vi.mock('../lib/config.js', () => ({
   setLanguage: (...args: unknown[]) => mockSetLanguage(...args),
   setModel: (...args: unknown[]) => mockSetModel(...args),
   setProvider: (...args: unknown[]) => mockSetProvider(...args),
+  setBaseUrl: vi.fn(),
   isValidLanguage: (v: string) => mockIsValidLanguage(v),
   isValidProvider: (v: string) => mockIsValidProvider(v),
-  VALID_LANGUAGES: ['en', 'ja', 'zh', 'ko', 'es', 'fr', 'de'],
+  VALID_LANGUAGES: ['en', 'ja'],
   VALID_PROVIDERS: ['gemini', 'openai', 'anthropic', 'ollama'],
-  DEFAULT_MODELS: { gemini: 'gemini-2.5-flash', openai: 'gpt-4o', anthropic: 'claude-3-sonnet' }
+  DEFAULT_MODELS: { gemini: 'gemini-2.5-flash', openai: 'gpt-4o', anthropic: 'claude-3-sonnet' },
+  CONFIG_KEYS: ['lang', 'model', 'provider', 'baseUrl']
 }))
 
 // Mock simple-git
@@ -114,12 +116,11 @@ describe('configCommand', () => {
     })
 
     describe('unknown key', () => {
-      it('should reject unknown config key', async () => {
+      it('should reject unknown config key via Commander choices validation', async () => {
+        // Commander.js validates choices before action runs and calls process.exit
         await expect(
           configCommand.parseAsync(['set', 'unknown', 'value'], { from: 'user' })
-        ).rejects.toThrow('process.exit called')
-
-        expect(mockExit).toHaveBeenCalledWith(1)
+        ).rejects.toThrow()
       })
     })
   })
@@ -133,14 +134,9 @@ describe('configCommand', () => {
       expect(consoleSpy).toHaveBeenCalledWith('en')
     })
 
-    it('should reject unknown key', async () => {
-      mockGetConfig.mockReturnValue({})
-
-      await expect(configCommand.parseAsync(['get', 'unknown'], { from: 'user' })).rejects.toThrow(
-        'process.exit called'
-      )
-
-      expect(mockExit).toHaveBeenCalledWith(1)
+    it('should reject unknown key via Commander choices validation', async () => {
+      // Commander.js validates choices before action runs and calls process.exit
+      await expect(configCommand.parseAsync(['get', 'unknown'], { from: 'user' })).rejects.toThrow()
     })
   })
 

@@ -5,10 +5,11 @@ import { simpleGit } from 'simple-git'
 import { findTemplate, generateBranchNameFromDiff } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 export const checkoutCommand = new Command('checkout')
   .description('Generate a branch name from current diff and checkout')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-y, --yes', 'Skip confirmation and checkout directly')

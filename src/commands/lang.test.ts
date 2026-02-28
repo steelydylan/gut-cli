@@ -20,7 +20,7 @@ vi.mock('../lib/config.js', () => ({
   setLanguage: (...args: unknown[]) => mockSetLanguage(...args),
   getLocalConfig: () => mockGetLocalConfig(),
   isValidLanguage: (v: string) => mockIsValidLanguage(v),
-  VALID_LANGUAGES: ['en', 'ja', 'zh', 'ko', 'es', 'fr', 'de']
+  VALID_LANGUAGES: ['en', 'ja']
 }))
 
 // Import the command after mocks
@@ -71,14 +71,9 @@ describe('langCommand', () => {
       expect(mockSetLanguage).toHaveBeenCalledWith('ja', true)
     })
 
-    it('should reject invalid language', async () => {
-      mockIsValidLanguage.mockReturnValue(false)
-
-      await expect(langCommand.parseAsync(['invalid'], { from: 'user' })).rejects.toThrow(
-        'process.exit called'
-      )
-
-      expect(mockExit).toHaveBeenCalledWith(1)
+    it('should reject invalid language via Commander choices validation', async () => {
+      // Commander.js validates choices before action runs and calls process.exit
+      await expect(langCommand.parseAsync(['invalid'], { from: 'user' })).rejects.toThrow()
     })
 
     it('should handle setLanguage error', async () => {

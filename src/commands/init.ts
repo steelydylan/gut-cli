@@ -13,6 +13,7 @@ import ora from 'ora'
 import { simpleGit } from 'simple-git'
 import { getDefaultModel, getLanguage } from '../lib/config.js'
 import { getApiKey, type Provider, resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 function openFolder(path: string): void {
   const platform = process.platform
@@ -103,10 +104,7 @@ Translated template:`
 
 export const initCommand = new Command('init')
   .description('Initialize .gut/ templates in your project or globally')
-  .option(
-    '-p, --provider <provider>',
-    'AI provider for translation (gemini, openai, anthropic, ollama)'
-  )
+  .addOption(providerOption())
   .option('-f, --force', 'Overwrite existing templates')
   .option('-g, --global', 'Initialize templates globally (~/.config/gut/templates/)')
   .option('-o, --open', 'Open the templates folder (can be used alone)')

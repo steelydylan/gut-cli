@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 import { Command } from 'commander'
 import { authCommand } from './commands/auth.js'
+import { handleCompletion, installCompletion, uninstallCompletion } from './commands/completion.js'
 
 const require = createRequire(import.meta.url)
 const pkg = require('../package.json')
@@ -56,4 +57,34 @@ program.addCommand(langCommand)
 program.addCommand(initCommand)
 program.addCommand(gitignoreCommand)
 
-program.parse()
+// Shell completion command
+const completionCommand = new Command('completion').description('Manage shell completion')
+
+completionCommand
+  .command('install')
+  .description('Install shell completion (auto-detects your shell)')
+  .action(async () => {
+    await installCompletion()
+  })
+
+completionCommand
+  .command('uninstall')
+  .description('Uninstall shell completion')
+  .action(async () => {
+    await uninstallCompletion()
+  })
+
+program.addCommand(completionCommand)
+
+// Handle tab completion before parsing
+async function main() {
+  // Check if we're in completion mode (tabtab sets COMP_LINE env var)
+  const isCompletionMode = await handleCompletion(program)
+  if (isCompletionMode) {
+    return
+  }
+
+  program.parse()
+}
+
+main()

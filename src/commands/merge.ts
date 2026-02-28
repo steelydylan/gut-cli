@@ -7,11 +7,12 @@ import { simpleGit } from 'simple-git'
 import { findTemplate, resolveConflict } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 export const mergeCommand = new Command('merge')
   .description('Merge a branch with AI-powered conflict resolution')
   .argument('<branch>', 'Branch to merge')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('--no-commit', 'Do not auto-commit after resolving')

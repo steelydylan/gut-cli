@@ -13,6 +13,15 @@ export interface GutConfig {
   baseUrl?: string
 }
 
+export const CONFIG_KEYS = ['lang', 'model', 'provider', 'baseUrl'] as const
+
+export const CONFIG_KEY_DESCRIPTIONS: Record<(typeof CONFIG_KEYS)[number], string> = {
+  lang: 'Output language',
+  model: 'AI model name',
+  provider: 'AI provider',
+  baseUrl: 'Custom API base URL'
+}
+
 const DEFAULT_CONFIG: GutConfig = {
   lang: 'en'
 }
@@ -126,6 +135,11 @@ export function getLanguageInstruction(lang: Language): string {
 }
 
 export const VALID_LANGUAGES: Language[] = ['en', 'ja']
+
+export const LANGUAGE_DESCRIPTIONS: Record<Language, string> = {
+  en: 'English',
+  ja: 'Japanese'
+}
 
 export function isValidLanguage(lang: string): lang is Language {
   return VALID_LANGUAGES.includes(lang as Language)

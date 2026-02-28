@@ -7,6 +7,7 @@ import { findTemplate, generateBranchName } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
 import { requireGhCli } from '../lib/gh.js'
+import { branchTypeOption, providerOption } from '../lib/options.js'
 
 function getIssueInfo(issueNumber: string): { title: string; body: string } | null {
   try {
@@ -24,10 +25,10 @@ export const branchCommand = new Command('branch')
   .description('Generate a branch name from issue number or description')
   .argument('[issue]', 'Issue number (e.g., 123 or #123)')
   .option('-d, --description <description>', 'Use description instead of issue')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
-  .option('-t, --type <type>', 'Branch type (feature, fix, hotfix, chore, refactor)')
+  .addOption(branchTypeOption())
   .option('-c, --checkout', 'Create and checkout the branch')
   .action(async (issue, options) => {
     const git = simpleGit()

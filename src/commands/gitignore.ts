@@ -7,6 +7,7 @@ import { simpleGit } from 'simple-git'
 import { findTemplate, generateGitignore } from '../lib/ai.js'
 import { getBaseUrl, getLanguage } from '../lib/config.js'
 import { resolveProvider } from '../lib/credentials.js'
+import { providerOption } from '../lib/options.js'
 
 // Config files that indicate language/framework
 const CONFIG_FILES = [
@@ -124,7 +125,7 @@ function findConfigFiles(repoRoot: string): Map<string, string> {
 
 export const gitignoreCommand = new Command('gitignore')
   .description('Generate .gitignore from current codebase')
-  .option('-p, --provider <provider>', 'AI provider (gemini, openai, anthropic, ollama)')
+  .addOption(providerOption())
   .option('-m, --model <model>', 'Model to use (provider-specific)')
   .option('--base-url <url>', 'Base URL for API provider')
   .option('-o, --output <file>', 'Output file (default: .gitignore)', '.gitignore')

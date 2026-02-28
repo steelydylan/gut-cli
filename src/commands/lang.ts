@@ -1,5 +1,5 @@
 import chalk from 'chalk'
-import { Command } from 'commander'
+import { Argument, Command } from 'commander'
 import {
   getLanguage,
   getLocalConfig,
@@ -10,7 +10,7 @@ import {
 
 export const langCommand = new Command('lang')
   .description('Set or show output language')
-  .argument('[language]', `Language to set (${VALID_LANGUAGES.join(', ')})`)
+  .addArgument(new Argument('[language]', 'Language to set').choices([...VALID_LANGUAGES]))
   .option('--local', 'Set for current repository only')
   .action((language: string | undefined, options: { local?: boolean }) => {
     if (!language) {
